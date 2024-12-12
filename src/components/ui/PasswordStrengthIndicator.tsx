@@ -1,6 +1,4 @@
-interface PasswordStrengthIndicatorProps {
-  password: string;
-}
+import PasswordStrengthIndicatorProps from "../../interfaces/PasswordStrengthIndicatorProps";
 
 export const PasswordStrengthIndicator = ({
   password,
