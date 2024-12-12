@@ -64,7 +64,6 @@ export default function VerifyEmail() {
       if (isSignUpComplete) {
         toast.success("Email verified successfully!");
 
-        // If we have the password, attempt automatic login
         if (password) {
           try {
             await login(email, password);
@@ -72,7 +71,6 @@ export default function VerifyEmail() {
             return;
           } catch (loginErr) {
             console.error("Auto-login failed:", loginErr);
-            // Continue to login page if auto-login fails
           }
         }
 
@@ -94,7 +92,7 @@ export default function VerifyEmail() {
     try {
       await resendSignUpCode({ username: email });
       toast.success("Verification code resent successfully!");
-      setResendCountdown(60); // Start 60 second countdown
+      setResendCountdown(60);
       setError("");
     } catch (err: any) {
       console.error("Error resending code:", err);
