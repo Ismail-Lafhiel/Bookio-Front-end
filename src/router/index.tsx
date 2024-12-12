@@ -1,20 +1,14 @@
-// src/router/index.tsx
-import { useRoutes } from 'react-router-dom';
-import { publicRoutes, protectedRoutes, guestRoutes } from './routes';
-import { useAuth } from '../context/AuthContext';
+import { Suspense } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { routes } from './routes';
+
+const router = createBrowserRouter(routes);
 
 export const AppRouter = () => {
-  const { isAuthenticated } = useAuth();
-
-  const routes = [
-    ...publicRoutes,
-    // Show guest routes only if not authenticated
-    ...(!isAuthenticated ? guestRoutes : []),
-    // Show protected routes only if authenticated
-    ...(isAuthenticated ? protectedRoutes : [])
-  ];
-
-  const element = useRoutes(routes);
-
-  return <>{element}</>;
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 };

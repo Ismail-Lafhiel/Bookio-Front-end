@@ -10,14 +10,15 @@ import {
 import { signUp } from "aws-amplify/auth";
 import { Button } from "../ui/Button";
 import { FormInput } from "../ui/FormInput";
+
+import toast from "react-hot-toast";
+import RegisterForm from "../../interfaces/registerForm";
+import FormErrors from "../../interfaces/formError";
 import {
   validateEmail,
   validatePassword,
   validateRequired,
-} from "../../interfaces/Validation";
-import toast from "react-hot-toast";
-import RegisterForm from "../../interfaces/registerForm";
-import FormErrors from "../../interfaces/formError";
+} from "../../interfaces/validation";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -106,7 +107,10 @@ export default function Register() {
 
       toast.success("Registration successful! Please verify your email.");
       navigate("/verify-email", {
-        state: { email: formData.email },
+        state: {
+          username: formData.email,
+          email: formData.email,
+        },
         replace: true,
       });
     } catch (error: any) {

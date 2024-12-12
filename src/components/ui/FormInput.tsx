@@ -9,7 +9,7 @@ import {
 import { forwardRef, useState, useRef, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
-import FormInputProps from "../../interfaces/FormInputProps";
+import FormInputProps from "../../interfaces/formInputProps";
 
 
 

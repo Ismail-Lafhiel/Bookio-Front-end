@@ -1,6 +1,18 @@
 // src/context/AuthContext.tsx
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { signIn, signOut, signUp, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import {
+  signIn,
+  signOut,
+  signUp,
+  getCurrentUser,
+  fetchUserAttributes,
+} from "aws-amplify/auth";
 
 interface User {
   email: string;
@@ -46,20 +58,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const currentUser = await getCurrentUser();
       if (currentUser) {
-        // Use fetchUserAttributes instead of accessing signInUserSession
         const attributes = await fetchUserAttributes();
         setUser({
-          email: attributes.email ?? '',
-          given_name: attributes.given_name ?? '',
-          family_name: attributes.family_name ?? '',
-          preferred_username: attributes.preferred_username ?? '',
-          birthdate: attributes.birthdate ?? '',
+          email: attributes.email ?? "",
+          given_name: attributes.given_name ?? "",
+          family_name: attributes.family_name ?? "",
+          preferred_username: attributes.preferred_username ?? "",
+          birthdate: attributes.birthdate ?? "",
           sub: attributes.sub,
-          updated_at: attributes.updated_at
+          updated_at: attributes.updated_at,
         });
       }
     } catch (err) {
-      console.error('Auth check failed:', err);
+      console.error("Auth check failed:", err);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -73,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signIn({ username: email, password });
       await checkAuth();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : "Login failed");
       throw err;
     } finally {
       setIsLoading(false);
@@ -94,13 +105,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             family_name: data.lastName,
             preferred_username: data.preferredUsername,
             birthdate: data.birthdate,
-            updated_at: String(Math.floor(Date.now() / 1000))
+            updated_at: String(Math.floor(Date.now() / 1000)),
           },
-          autoSignIn: true
-        }
+          autoSignIn: true,
+        },
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : "Registration failed");
       throw err;
     } finally {
       setIsLoading(false);
@@ -113,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signOut();
       setUser(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Logout failed');
+      setError(err instanceof Error ? err.message : "Logout failed");
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         error,
         login,
         register,
-        logout
+        logout,
       }}
     >
       {children}
@@ -139,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
