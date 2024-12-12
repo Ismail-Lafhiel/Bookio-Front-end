@@ -1,11 +1,24 @@
 // src/context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { signIn, signOut, signUp, getCurrentUser } from 'aws-amplify/auth';
+import { signIn, signOut, signUp, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 
 interface User {
   email: string;
-  name: string;
+  given_name: string;
+  family_name: string;
+  preferred_username: string;
+  birthdate: string;
   sub?: string;
+  updated_at?: string;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  preferredUsername: string;
+  birthdate: string;
 }
 
 interface AuthContextType {
@@ -14,7 +27,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -33,15 +46,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const currentUser = await getCurrentUser();
       if (currentUser) {
-        const userAttributes = currentUser.signInUserSession.idToken.payload;
+        // Use fetchUserAttributes instead of accessing signInUserSession
+        const attributes = await fetchUserAttributes();
         setUser({
-          email: userAttributes.email,
-          name: userAttributes.name,
-          sub: userAttributes.sub
+          email: attributes.email ?? '',
+          given_name: attributes.given_name ?? '',
+          family_name: attributes.family_name ?? '',
+          preferred_username: attributes.preferred_username ?? '',
+          birthdate: attributes.birthdate ?? '',
+          sub: attributes.sub,
+          updated_at: attributes.updated_at
         });
       }
     } catch (err) {
       console.error('Auth check failed:', err);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -61,15 +80,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (data: RegisterData) => {
     try {
       setIsLoading(true);
       setError(null);
       await signUp({
-        username: email,
-        password,
+        username: data.email,
+        password: data.password,
         options: {
-          userAttributes: { email, name },
+          userAttributes: {
+            email: data.email,
+            given_name: data.firstName,
+            family_name: data.lastName,
+            preferred_username: data.preferredUsername,
+            birthdate: data.birthdate,
+            updated_at: String(Math.floor(Date.now() / 1000))
+          },
           autoSignIn: true
         }
       });

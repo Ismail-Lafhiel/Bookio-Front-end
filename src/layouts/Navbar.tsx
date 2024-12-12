@@ -1,40 +1,34 @@
 import { Fragment } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-
-const publicNavigation = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
+// You might want to move this to a separate config file
+const navigation = [
+  { name: "Dashboard", href: "/" },
+  { name: "Books", href: "/books" },
+  { name: "Authors", href: "/authors" },
+  // Add more navigation items as needed
 ];
 
-const authNavigation = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Profile", href: "/profile" },
-  { name: "Settings", href: "/settings" },
-];
-
-interface NavbarProps {
-  type?: 'public' | 'auth' | 'guest';
-}
-
-export default function Navbar({ type = 'public' }: NavbarProps) {
-  const { user, logout, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+export default function Navbar() {
   const location = useLocation();
-
-  // Select navigation items based on type
-  const navigation = type === 'auth' ? authNavigation : publicNavigation;
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleSignOut = async () => {
     try {
       await logout();
-      navigate("/login");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Error signing out:", error);
     }
+  };
+
+  const getAvatarName = () => {
+    if (user?.given_name && user?.family_name) {
+      return `${user.given_name} ${user.family_name}`;
+    }
+    return user?.preferred_username || user?.email || "";
   };
 
   return (
@@ -80,7 +74,7 @@ export default function Navbar({ type = 'public' }: NavbarProps) {
                           <span className="sr-only">Open user menu</span>
                           <img
                             className="h-8 w-8 rounded-full"
-                            src={`https://ui-avatars.com/api/?name=${user?.name || user?.email}`}
+                            src={`https://ui-avatars.com/api/?name=${getAvatarName()}`}
                             alt=""
                           />
                         </Menu.Button>
@@ -166,7 +160,7 @@ export default function Navbar({ type = 'public' }: NavbarProps) {
           </div>
 
           <Disclosure.Panel className="md:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+            <div className="space-y-1 px-2 pb-3 pt-2">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -187,13 +181,13 @@ export default function Navbar({ type = 'public' }: NavbarProps) {
                   <div className="flex-shrink-0">
                     <img
                       className="h-10 w-10 rounded-full"
-                      src={`https://ui-avatars.com/api/?name=${user?.name || user?.email}`}
+                      src={`https://ui-avatars.com/api/?name=${getAvatarName()}`}
                       alt=""
                     />
                   </div>
                   <div className="ml-3">
                     <div className="text-base font-medium leading-none text-white">
-                      {user?.name}
+                      {user?.given_name} {user?.family_name}
                     </div>
                     <div className="text-sm font-medium leading-none text-gray-400">
                       {user?.email}
@@ -215,7 +209,7 @@ export default function Navbar({ type = 'public' }: NavbarProps) {
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                    className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                   >
                     Sign out
                   </button>
