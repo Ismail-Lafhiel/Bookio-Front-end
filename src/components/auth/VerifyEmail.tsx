@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { confirmSignUp, resendSignUpCode } from "aws-amplify/auth";
 import { Button } from "../ui/Button";
 import { FormInput } from "../ui/FormInput";
-import { KeyIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
+import { KeyIcon } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 
@@ -21,7 +21,7 @@ export default function VerifyEmail() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [resendCountdown, setResendCountdown] = useState(0);
-  const [password, setPassword] = useState(""); // Store password from registration
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     // Check if we have the email and password in state
