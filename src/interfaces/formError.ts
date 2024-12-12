@@ -6,6 +6,7 @@ interface FormErrors {
   lastName?: string;
   preferredUsername?: string;
   birthdate?: string;
+  updated_at?: string;
 }
 
 export default FormErrors;
