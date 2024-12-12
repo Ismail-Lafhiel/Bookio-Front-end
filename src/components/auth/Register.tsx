@@ -83,6 +83,40 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      await signUp({
+        username: formData.email,
+        password: formData.password,
+        options: {
+          userAttributes: {
+            email: formData.email,
+            given_name: formData.firstName,
+            family_name: formData.lastName,
+            preferred_username: formData.preferredUsername,
+            birthdate: formData.birthdate,
+            updated_at: String(Math.floor(Date.now() / 1000)),
+          },
+        },
+      });
+
+      toast.success("Registration successful! Please verify your email.");
+      navigate("/verify-email", {
+        state: { email: formData.email },
+        replace: true,
+      });
+    } catch (error: any) {
+      console.error("Error signing up:", error);
+      toast.error(error.message || "An error occurred during registration");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
@@ -102,7 +136,7 @@ export default function Register() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email and Username in one row */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <FormInput
