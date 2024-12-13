@@ -4,148 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import { FormInput } from "../ui/FormInput";
+import { Button } from "../ui/Button";
+import FormErrors from "../../interfaces/formError";
+import LoginForm from "../../interfaces/loginForm";
+import { validateEmail, validatePassword } from "../../interfaces/validation";
 
-interface LoginForm {
-  email: string;
-  password: string;
-}
 
-interface FormErrors {
-  email?: string;
-  password?: string;
-}
-
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  error?: string;
-  icon?: React.ElementType;
-}
-
-const FormInput: React.FC<FormInputProps> = ({
-  label,
-  error,
-  icon: Icon,
-  ...props
-}) => {
-  return (
-    <div>
-      <label
-        htmlFor={props.id}
-        className="block text-sm font-medium leading-6 text-gray-900"
-      >
-        {label}
-      </label>
-      <div className="relative mt-2 rounded-md shadow-sm">
-        {Icon && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Icon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-        )}
-        <input
-          {...props}
-          className={`block w-full rounded-md border-0 py-1.5 ${
-            Icon ? "pl-10" : "pl-3"
-          } text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 ${
-            error
-              ? "ring-red-300 text-red-900 placeholder:text-red-300 focus:ring-red-500"
-              : ""
-          }`}
-        />
-      </div>
-      {error && (
-        <p className="mt-2 text-sm text-red-600" id={`${props.id}-error`}>
-          {error}
-        </p>
-      )}
-    </div>
-  );
-};
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary";
-  size?: "sm" | "md" | "lg";
-  isLoading?: boolean;
-}
-
-const Button: React.FC<ButtonProps> = ({
-  children,
-  variant = "primary",
-  size = "md",
-  isLoading = false,
-  className = "",
-  ...props
-}) => {
-  const baseStyles =
-    "inline-flex items-center justify-center rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors";
-
-  const variants = {
-    primary:
-      "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500",
-    secondary:
-      "bg-white text-gray-700 hover:bg-gray-50 focus:ring-indigo-500 ring-1 ring-inset ring-gray-300",
-  };
-
-  const sizes = {
-    sm: "px-3 py-2 text-sm",
-    md: "px-4 py-2 text-sm",
-    lg: "px-4 py-2 text-base",
-  };
-
-  return (
-    <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${
-        isLoading ? "opacity-75 cursor-not-allowed" : ""
-      } ${className}`}
-      disabled={isLoading}
-      {...props}
-    >
-      {isLoading && (
-        <svg
-          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
-      )}
-      {children}
-    </button>
-  );
-};
-
-const validateEmail = (email: string): string | undefined => {
-  if (!email) {
-    return "Email is required";
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return "Invalid email format";
-  }
-  return undefined;
-};
-
-const validatePassword = (password: string): string | undefined => {
-  if (!password) {
-    return "Password is required";
-  }
-  if (password.length < 8) {
-    return "Password must be at least 8 characters";
-  }
-  return undefined;
-};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -278,7 +143,7 @@ export default function Login() {
                 isLoading={isLoading}
                 className="w-full"
               >
-                Sign in
+                Create account
               </Button>
             </div>
           </form>

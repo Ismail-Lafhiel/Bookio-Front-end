@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
@@ -17,11 +17,14 @@ const userNavigation = [
 
 export default function Navbar() {
   const location = useLocation();
-  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const { user, isLoading, logout } = useAuth();
 
   const handleSignOut = async () => {
     try {
       await logout();
+      navigate("/login");
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -34,7 +37,7 @@ export default function Navbar() {
     return user?.preferred_username || user?.email || "";
   };
 
-  if (loading) {
+  if (isLoading) {
     return null;
   }
 
