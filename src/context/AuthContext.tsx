@@ -78,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
+
     try {
       setIsLoading(true);
       setError(null);
@@ -89,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
+    
   };
 
   const register = async (data: RegisterData) => {
@@ -118,7 +120,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+
   const logout = async () => {
+
     try {
       setIsLoading(true);
       await signOut();
@@ -128,7 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
+
   };
+
 
   return (
     <AuthContext.Provider
