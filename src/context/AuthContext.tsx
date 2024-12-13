@@ -12,6 +12,8 @@ import {
   signUp,
   getCurrentUser,
   fetchUserAttributes,
+  resetPassword,
+  confirmResetPassword,
 } from "aws-amplify/auth";
 
 interface User {
@@ -40,6 +42,12 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  confirmForgotPassword: (
+    email: string,
+    code: string,
+    newPassword: string
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -78,7 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-
     try {
       setIsLoading(true);
       setError(null);
@@ -90,7 +97,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-    
   };
 
   const register = async (data: RegisterData) => {
@@ -120,9 +126,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await resetPassword({ username: email });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Password reset failed");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const confirmForgotPassword = async (
+    email: string,
+    code: string,
+    newPassword: string
+  ) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await confirmResetPassword({
+        username: email,
+        confirmationCode: code,
+        newPassword: newPassword,
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Password reset confirmation failed"
+      );
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const logout = async () => {
-
     try {
       setIsLoading(true);
       await signOut();
@@ -132,9 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-
   };
-
 
   return (
     <AuthContext.Provider
@@ -146,6 +186,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        forgotPassword,
+        confirmForgotPassword,
       }}
     >
       {children}
