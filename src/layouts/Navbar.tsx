@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
+import DarkModeToggle from "../components/ui/DarkModeToggle";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -18,7 +19,7 @@ const userNavigation = [
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const { user, isLoading, logout } = useAuth();
 
   const handleSignOut = async () => {
@@ -42,12 +43,11 @@ export default function Navbar() {
   }
 
   return (
-    <Disclosure as="nav" className="bg-gray-800">
+    <Disclosure as="nav" className="bg-white dark:bg-gray-800">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
-              {/* Left side - Logo and Navigation */}
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <Link to="/">
@@ -66,8 +66,8 @@ export default function Navbar() {
                         to={item.href}
                         className={`${
                           location.pathname === item.href
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                            ? "bg-gray-900 dark:bg-gray-700 text-white"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                         } rounded-md px-3 py-2 text-sm font-medium`}
                       >
                         {item.name}
@@ -77,13 +77,12 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Right side - Auth buttons or Profile menu */}
               <div className="hidden md:block">
                 <div className="ml-4 flex items-center md:ml-6">
                   {user ? (
                     <Menu as="div" className="relative ml-3">
                       <div>
-                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-200 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
                           <span className="sr-only">Open user menu</span>
                           <img
                             className="h-8 w-8 rounded-full"
@@ -101,15 +100,15 @@ export default function Navbar() {
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                       >
-                        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                           {userNavigation.map((item) => (
                             <Menu.Item key={item.name}>
                               {({ active }) => (
                                 <Link
                                   to={item.href}
                                   className={`${
-                                    active ? "bg-gray-100" : ""
-                                  } block px-4 py-2 text-sm text-gray-700`}
+                                    active ? "bg-gray-100 dark:bg-gray-700" : ""
+                                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white`}
                                 >
                                   {item.name}
                                 </Link>
@@ -121,8 +120,8 @@ export default function Navbar() {
                               <button
                                 onClick={handleSignOut}
                                 className={`${
-                                  active ? "bg-gray-100" : ""
-                                } block w-full px-4 py-2 text-left text-sm text-gray-700`}
+                                  active ? "bg-gray-100 dark:bg-gray-700" : ""
+                                } block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white`}
                               >
                                 Sign out
                               </button>
@@ -135,7 +134,7 @@ export default function Navbar() {
                     <div className="space-x-4">
                       <Link
                         to="/login"
-                        className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                       >
                         Login
                       </Link>
@@ -147,12 +146,15 @@ export default function Navbar() {
                       </Link>
                     </div>
                   )}
+                  <div className="md:ml-3">
+                    <DarkModeToggle />
+                  </div>
                 </div>
               </div>
 
               {/* Mobile menu button */}
               <div className="-mr-2 flex md:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-2 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -166,7 +168,7 @@ export default function Navbar() {
 
           {/* Mobile menu */}
           <Disclosure.Panel className="md:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+            <div className="space-y-1 px-2 pb-3 pt-2">
               {navigation.map((item) => (
                 <Disclosure.Button
                   key={item.name}
@@ -174,8 +176,8 @@ export default function Navbar() {
                   to={item.href}
                   className={`${
                     location.pathname === item.href
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      ? "bg-gray-900 dark:bg-gray-700 text-white"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   } block rounded-md px-3 py-2 text-base font-medium`}
                 >
                   {item.name}
@@ -185,7 +187,7 @@ export default function Navbar() {
 
             {/* Mobile menu authentication section */}
             {user ? (
-              <div className="border-t border-gray-700 pb-3 pt-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 pb-3 pt-4">
                 <div className="flex items-center px-5">
                   <div className="flex-shrink-0">
                     <img
@@ -195,12 +197,15 @@ export default function Navbar() {
                     />
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-white">
+                    <div className="text-base font-medium text-gray-800 dark:text-white">
                       {getAvatarName()}
                     </div>
-                    <div className="text-sm font-medium text-gray-400">
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       {user.email}
                     </div>
+                  </div>
+                  <div className="ml-auto">
+                    <DarkModeToggle />
                   </div>
                 </div>
                 <div className="mt-3 space-y-1 px-2">
@@ -209,7 +214,7 @@ export default function Navbar() {
                       key={item.name}
                       as={Link}
                       to={item.href}
-                      className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                      className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                     >
                       {item.name}
                     </Disclosure.Button>
@@ -217,26 +222,29 @@ export default function Navbar() {
                   <Disclosure.Button
                     as="button"
                     onClick={handleSignOut}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white w-full text-left"
+                    className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   >
                     Sign out
                   </Disclosure.Button>
                 </div>
               </div>
             ) : (
-              <div className="border-t border-gray-700 pb-3 pt-4 px-5 space-y-1">
+              <div className="border-t border-gray-200 dark:border-gray-700 pb-3 pt-4 px-5 space-y-1">
                 <Link
                   to="/login"
-                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  className="block rounded-md px-3 py-2 text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700"
                 >
                   Sign up
                 </Link>
+                <div className="mt-4">
+                  <DarkModeToggle />
+                </div>
               </div>
             )}
           </Disclosure.Panel>

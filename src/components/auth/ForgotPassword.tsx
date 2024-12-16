@@ -69,42 +69,46 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+    <div className="flex flex-col justify-center py-16 md:py-20 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
           Reset your password
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
           Enter your email to receive a verification code
         </p>
       </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <FormInput
-            label="Email address"
-            placeholder="Enter your email"
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={formData.email}
-            onChange={handleChange}
-            error={errors.email}
-            icon={EnvelopeIcon}
-          />
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <FormInput
+              label="Email address"
+              placeholder="Enter your email"
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              icon={EnvelopeIcon}
+              className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              labelClassName="dark:text-gray-200"
+            />
 
-          <Button type="submit" isLoading={isLoading} className="w-full">
-            Send Reset Code
-          </Button>
-        </form>
+            <Button type="submit" isLoading={isLoading} className="w-full">
+              Send Reset Code
+            </Button>
+          </form>
+        </div>
 
-        <p className="mt-10 text-center text-sm text-gray-500">
+        <p className="mt-10 text-center text-sm text-gray-500 dark:text-gray-400">
           Remember your password?{" "}
           <button
             onClick={() => navigate("/login")}
-            className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
+            className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             Back to login
           </button>

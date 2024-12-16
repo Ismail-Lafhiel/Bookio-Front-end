@@ -10,8 +10,6 @@ import FormErrors from "../../interfaces/formError";
 import LoginForm from "../../interfaces/loginForm";
 import { validateEmail, validatePassword } from "../../interfaces/validation";
 
-
-
 export default function Login() {
   const navigate = useNavigate();
   const { login, isLoading } = useAuth();
@@ -77,16 +75,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="flex flex-col justify-center py-16 md:py-20 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
           Or{" "}
           <Link
             to="/register"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
+            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             create a new account
           </Link>
@@ -94,7 +92,7 @@ export default function Login() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <FormInput
               label="Email address"
@@ -108,6 +106,8 @@ export default function Login() {
               onChange={handleChange}
               error={errors.email}
               placeholder="Enter your email"
+              className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              labelClassName="dark:text-gray-200"
             />
 
             <FormInput
@@ -122,13 +122,15 @@ export default function Login() {
               onChange={handleChange}
               error={errors.password}
               placeholder="Enter your password"
+              className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              labelClassName="dark:text-gray-200"
             />
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 <Link
                   to="/forgot-password"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   Forgot your password?
                 </Link>
@@ -143,7 +145,7 @@ export default function Login() {
                 isLoading={isLoading}
                 className="w-full"
               >
-                Create account
+                Sign in
               </Button>
             </div>
           </form>

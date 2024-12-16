@@ -13,6 +13,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   suggestions?: string[];
   autoGrow?: boolean;
   textArea?: boolean;
+  labelClassName?: string;
 }
 
 export default FormInputProps;
