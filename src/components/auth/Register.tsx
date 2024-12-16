@@ -122,7 +122,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-900 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-900 py-16 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           Create your account

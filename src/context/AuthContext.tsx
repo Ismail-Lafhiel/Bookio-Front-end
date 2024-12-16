@@ -13,6 +13,7 @@ import {
   fetchUserAttributes,
   resetPassword,
   confirmResetPassword,
+  updateUserAttributes,
 } from "aws-amplify/auth";
 
 interface User {
@@ -23,6 +24,15 @@ interface User {
   birthdate: string;
   sub?: string;
   updated_at?: string;
+  profile_pic?: string | null;
+  background_pic?: string | null;
+  bio?: string | null;
+  social_links?: {
+    twitter?: string;
+    facebook?: string;
+    instagram?: string;
+    discord?: string;
+  } | null;
 }
 
 interface RegisterData {
@@ -48,6 +58,7 @@ interface AuthContextType {
     newPassword: string
   ) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserProfile: (data: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,11 +72,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth();
   }, []);
 
+  const updateUserProfile = async (data: Partial<User>) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const updateAttributes: Record<string, string> = {};
+
+      // Handle each field type appropriately
+      if (data.profile_pic !== undefined) {
+        updateAttributes["custom:profile_pic"] = data.profile_pic || "";
+      }
+
+      if (data.background_pic !== undefined) {
+        updateAttributes["custom:background_pic"] = data.background_pic || "";
+      }
+
+      if (data.bio !== undefined) {
+        updateAttributes["custom:bio"] = data.bio || "";
+      }
+
+      if (data.social_links !== undefined) {
+        updateAttributes["custom:social_links"] = data.social_links
+          ? JSON.stringify(data.social_links)
+          : "";
+      }
+
+      // Update the user attributes
+      await updateUserAttributes({
+        userAttributes: updateAttributes,
+      });
+
+      // Refresh the user data
+      await checkAuth();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Profile update failed");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const checkAuth = async () => {
     try {
       const currentUser = await getCurrentUser();
       if (currentUser) {
         const attributes = await fetchUserAttributes();
+
+        // Parse custom attributes if they exist
+        const socialLinks = attributes["custom:social_links"]
+          ? JSON.parse(attributes["custom:social_links"])
+          : null;
+
         setUser({
           email: attributes.email ?? "",
           given_name: attributes.given_name ?? "",
@@ -74,6 +132,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           birthdate: attributes.birthdate ?? "",
           sub: attributes.sub,
           updated_at: attributes.updated_at,
+          profile_pic: attributes["custom:profile_pic"] || null,
+          background_pic: attributes["custom:background_pic"] || null,
+          bio: attributes["custom:bio"] || null,
+          social_links: socialLinks,
         });
       }
     } catch (err) {
@@ -187,6 +249,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         forgotPassword,
         confirmForgotPassword,
+        updateUserProfile,
       }}
     >
       {children}
