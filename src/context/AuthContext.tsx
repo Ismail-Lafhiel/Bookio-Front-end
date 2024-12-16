@@ -15,6 +15,7 @@ import {
   confirmResetPassword,
   updateUserAttributes,
 } from "aws-amplify/auth";
+import { uploadData, getUrl } from "aws-amplify/storage";
 
 interface User {
   email: string;
@@ -59,6 +60,10 @@ interface AuthContextType {
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<void>;
+  uploadImage: (
+    file: File,
+    type: "profile_pic" | "background_pic"
+  ) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,21 +77,75 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth();
   }, []);
 
+  const uploadImage = async (
+    file: File,
+    type: "profile_pic" | "background_pic"
+  ): Promise<string> => {
+    try {
+      // Validate file size (max 5MB)
+      const MAX_SIZE = 5 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        throw new Error("File size too large. Maximum size is 5MB.");
+      }
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Only image files are allowed.");
+      }
+
+      const fileExtension = file.name.split(".").pop();
+      const fileName = `users/${
+        user?.sub
+      }/${type}/${Date.now()}.${fileExtension}`;
+
+      // Upload to S3
+      await uploadData({
+        key: fileName,
+        data: file,
+        options: {
+          contentType: file.type,
+          //@ts-ignore
+          accessLevel: "public",
+        },
+      });
+
+      // Get the public URL
+      const { url } = await getUrl({
+        key: fileName,
+        options: {
+          //@ts-ignore
+          accessLevel: "public",
+          expiresIn: 3600 * 24 * 365, // 1 year expiration
+        },
+      });
+
+      // Convert URL object to string if necessary
+      const urlString = typeof url === "string" ? url : url.toString();
+
+      // Update user attributes with the new URL
+      const attributeName = `custom:${type}`;
+      await updateUserAttributes({
+        userAttributes: {
+          [attributeName]: urlString,
+        },
+      });
+
+      // Refresh user data
+      await checkAuth();
+
+      return urlString;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+
   const updateUserProfile = async (data: Partial<User>) => {
     try {
       setIsLoading(true);
       setError(null);
 
       const updateAttributes: Record<string, string> = {};
-
-      // Handle each field type appropriately
-      if (data.profile_pic !== undefined) {
-        updateAttributes["custom:profile_pic"] = data.profile_pic || "";
-      }
-
-      if (data.background_pic !== undefined) {
-        updateAttributes["custom:background_pic"] = data.background_pic || "";
-      }
 
       if (data.bio !== undefined) {
         updateAttributes["custom:bio"] = data.bio || "";
@@ -112,7 +171,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   };
-
   const checkAuth = async () => {
     try {
       const currentUser = await getCurrentUser();
@@ -164,6 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       setError(null);
+
       await signUp({
         username: data.email,
         password: data.password,
@@ -174,13 +233,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             family_name: data.lastName,
             preferred_username: data.preferredUsername,
             birthdate: data.birthdate,
-            updated_at: String(Math.floor(Date.now() / 1000)),
           },
-          autoSignIn: true,
         },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await signOut();
+      setUser(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Logout failed");
       throw err;
     } finally {
       setIsLoading(false);
@@ -193,7 +264,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       await resetPassword({ username: email });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Password reset failed");
+      setError(
+        err instanceof Error ? err.message : "Password reset request failed"
+      );
       throw err;
     } finally {
       setIsLoading(false);
@@ -211,7 +284,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await confirmResetPassword({
         username: email,
         confirmationCode: code,
-        newPassword: newPassword,
+        newPassword,
       });
     } catch (err) {
       setError(
@@ -220,18 +293,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           : "Password reset confirmation failed"
       );
       throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      setIsLoading(true);
-      await signOut();
-      setUser(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Logout failed");
     } finally {
       setIsLoading(false);
     }
@@ -250,6 +311,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         forgotPassword,
         confirmForgotPassword,
         updateUserProfile,
+        uploadImage,
       }}
     >
       {children}
@@ -264,3 +326,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

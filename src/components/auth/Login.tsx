@@ -84,7 +84,7 @@ export default function Login() {
           Or{" "}
           <Link
             to="/register"
-            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="font-medium text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
           >
             create a new account
           </Link>
@@ -130,7 +130,7 @@ export default function Login() {
               <div className="text-sm">
                 <Link
                   to="/forgot-password"
-                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  className="font-medium text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
                 >
                   Forgot your password?
                 </Link>

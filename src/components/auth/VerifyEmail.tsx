@@ -114,7 +114,7 @@ export default function VerifyEmail() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
           We sent a verification code to{" "}
-          <span className="font-medium text-indigo-600 dark:text-indigo-400">
+          <span className="font-medium text-primary dark:text-primary">
             {email}
           </span>
         </p>
@@ -158,7 +158,7 @@ export default function VerifyEmail() {
                 type="button"
                 onClick={handleResendCode}
                 disabled={resendCountdown > 0 || loading}
-                className={`font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 ${
+                className={`font-medium text-primary hover:text-primary dark:text-primary dark:hover:text-primary ${
                   (resendCountdown > 0 || loading) &&
                   "opacity-50 cursor-not-allowed dark:opacity-40"
                 }`}
@@ -185,7 +185,7 @@ export default function VerifyEmail() {
             <div className="mt-6 text-center">
               <Link
                 to="/register"
-                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                className="font-medium text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
               >
                 Start registration again
               </Link>

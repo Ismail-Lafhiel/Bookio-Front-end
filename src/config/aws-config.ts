@@ -13,5 +13,12 @@ Amplify.configure({
       },
     },
   },
+  Storage: {
+    S3: {
+      bucket: 'bookio-img-upload', //bucket name
+      region: 'eu-north-1',
+    }
+  },
+  // @ts-ignore
   region: "eu-north-1",
 });
