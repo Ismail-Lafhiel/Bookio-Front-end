@@ -15,7 +15,9 @@ import {
   confirmResetPassword,
   updateUserAttributes,
 } from "aws-amplify/auth";
-import { uploadData, getUrl } from "aws-amplify/storage";
+
+import { uploadData } from "aws-amplify/storage";
+import { v4 as uuidv4 } from "uuid";
 
 interface User {
   email: string;
@@ -60,10 +62,8 @@ interface AuthContextType {
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<void>;
-  uploadImage: (
-    file: File,
-    type: "profile_pic" | "background_pic"
-  ) => Promise<string>;
+  uploadProfilePicture: (file: File) => Promise<string>;
+  uploadBackgroundPicture: (file: File) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,69 +76,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     checkAuth();
   }, []);
-
-  const uploadImage = async (
-    file: File,
-    type: "profile_pic" | "background_pic"
-  ): Promise<string> => {
-    try {
-      // Validate file size (max 5MB)
-      const MAX_SIZE = 5 * 1024 * 1024;
-      if (file.size > MAX_SIZE) {
-        throw new Error("File size too large. Maximum size is 5MB.");
-      }
-
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        throw new Error("Only image files are allowed.");
-      }
-
-      const fileExtension = file.name.split(".").pop();
-      const fileName = `users/${
-        user?.sub
-      }/${type}/${Date.now()}.${fileExtension}`;
-
-      // Upload to S3
-      await uploadData({
-        key: fileName,
-        data: file,
-        options: {
-          contentType: file.type,
-          //@ts-ignore
-          accessLevel: "public",
-        },
-      });
-
-      // Get the public URL
-      const { url } = await getUrl({
-        key: fileName,
-        options: {
-          //@ts-ignore
-          accessLevel: "public",
-          expiresIn: 3600 * 24 * 365, // 1 year expiration
-        },
-      });
-
-      // Convert URL object to string if necessary
-      const urlString = typeof url === "string" ? url : url.toString();
-
-      // Update user attributes with the new URL
-      const attributeName = `custom:${type}`;
-      await updateUserAttributes({
-        userAttributes: {
-          [attributeName]: urlString,
-        },
-      });
-
-      // Refresh user data
-      await checkAuth();
-
-      return urlString;
-    } catch (error) {
-      console.error("Upload error:", error);
-      throw error;
-    }
-  };
 
   const updateUserProfile = async (data: Partial<User>) => {
     try {
@@ -298,6 +235,83 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const uploadProfilePicture = async (file: File) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Generate a unique filename
+      const uniqueFileName = `profile-pics/${
+        user?.sub || "unknown"
+      }-${uuidv4()}${getFileExtension(file)}`;
+
+      // Upload the file
+      const result = await uploadData({
+        key: uniqueFileName,
+        data: file,
+        options: {
+          accessLevel: "protected", // Only accessible by the authenticated user
+          contentType: file.type,
+        },
+      }).result;
+
+      // Update user profile with the new profile picture URL
+      await updateUserProfile({
+        profile_pic: result.key,
+      });
+
+      return result.key;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Profile picture upload failed"
+      );
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const uploadBackgroundPicture = async (file: File) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Generate a unique filename
+      const uniqueFileName = `background-pics/${
+        user?.sub || "unknown"
+      }-${uuidv4()}${getFileExtension(file)}`;
+
+      // Upload the file
+      const result = await uploadData({
+        key: uniqueFileName,
+        data: file,
+        options: {
+          accessLevel: "protected", // Only accessible by the authenticated user
+          contentType: file.type,
+        },
+      }).result;
+
+      // Update user profile with the new background picture URL
+      await updateUserProfile({
+        background_pic: result.key,
+      });
+
+      return result.key;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Background picture upload failed"
+      );
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to get file extension
+  const getFileExtension = (file: File) => {
+    return file.name.slice(file.name.lastIndexOf(".")) || "";
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -311,7 +325,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         forgotPassword,
         confirmForgotPassword,
         updateUserProfile,
-        uploadImage,
+        uploadProfilePicture,
+        uploadBackgroundPicture,
       }}
     >
       {children}

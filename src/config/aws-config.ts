@@ -1,24 +1,23 @@
 import { Amplify } from "aws-amplify";
 
+const region = import.meta.env.VITE_AWS_REGION;
+const bucket = import.meta.env.VITE_S3_BUCKET;
+
+console.log("Amplify Configuration:", { region, bucket });
+
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: "eu-north-1_bvJD7pDZA",
-      userPoolClientId: "5vnrcqh5s4i4463l1qcvdu0d62",
-      signUpVerificationMethod: "code",
-      loginWith: {
-        email: true,
-        username: false,
-        phone: false,
-      },
+      userPoolId: import.meta.env.VITE_USER_POOL_ID,
+      userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID,
+      //@ts-ignore
+      region: region,
     },
   },
   Storage: {
     S3: {
-      bucket: 'bookio-img-upload', //bucket name
-      region: 'eu-north-1',
-    }
+      bucket: bucket,
+      region: region,
+    },
   },
-  // @ts-ignore
-  region: "eu-north-1",
 });

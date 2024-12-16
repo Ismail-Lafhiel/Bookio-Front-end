@@ -1,24 +1,36 @@
-import { useState, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
 import { useAuth } from "../../context/AuthContext";
 import {
-  FaTwitter,
+  FaCamera,
+  FaDiscord,
   FaFacebook,
   FaInstagram,
-  FaDiscord,
-  FaCamera,
+  FaTwitter,
 } from "react-icons/fa";
+import { uploadImageToS3 } from "../../utils/s3";
+
+interface FormData {
+  bio: string;
+  profile_pic: string;
+  background_pic: string;
+  social_links: {
+    twitter: string;
+    facebook: string;
+    instagram: string;
+    discord: string;
+  };
+}
 
 const Profile = () => {
-  const { user, updateUserProfile, isLoading, uploadImage } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const profileInputRef = useRef<HTMLInputElement>(null);
-  const backgroundInputRef = useRef<HTMLInputElement>(null);
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     bio: user?.bio || "",
     profile_pic: user?.profile_pic || "",
     background_pic: user?.background_pic || "",
+    //@ts-ignore
     social_links: user?.social_links || {
       twitter: "",
       facebook: "",
@@ -26,6 +38,142 @@ const Profile = () => {
       discord: "",
     },
   });
+
+  const handleFileChange = useCallback(
+    async (file: File, type: "profile_pic" | "background_pic") => {
+      try {
+        setIsUploading(true);
+
+        if (!file) throw new Error("No file selected");
+
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) throw new Error("File size exceeds 5MB limit");
+
+        const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+        if (!allowedTypes.includes(file.type)) {
+          throw new Error(
+            "File type not supported. Please use JPEG, PNG or GIF"
+          );
+        }
+
+        const url = await uploadImageToS3(file, type);
+
+        setFormData((prev) => ({
+          ...prev,
+          [type]: url,
+        }));
+
+        await updateUserProfile({
+          ...formData,
+          [type]: url,
+        });
+      } catch (error) {
+        console.error("File upload failed:", error);
+        alert(
+          error instanceof Error
+            ? error.message
+            : "Upload failed. Please try again."
+        );
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [updateUserProfile, formData]
+  );
+
+  const onBackgroundDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        await handleFileChange(acceptedFiles[0], "background_pic");
+      }
+    },
+    [handleFileChange]
+  );
+
+  const onProfileDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        await handleFileChange(acceptedFiles[0], "profile_pic");
+      }
+    },
+    [handleFileChange]
+  );
+
+  // Initialize dropzone hooks at the top level
+  const {
+    getRootProps: backgroundRootProps,
+    getInputProps: backgroundInputProps,
+  } = useDropzone({
+    onDrop: onBackgroundDrop,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+    },
+    maxSize: 5 * 1024 * 1024,
+    multiple: false,
+  });
+
+  const { getRootProps: profileRootProps, getInputProps: profileInputProps } =
+    useDropzone({
+      onDrop: onProfileDrop,
+      accept: {
+        "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+      },
+      maxSize: 5 * 1024 * 1024,
+      multiple: false,
+    });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        bio: user.bio || "",
+        profile_pic: user.profile_pic || "",
+        background_pic: user.background_pic || "",
+        //@ts-ignore
+        social_links: user.social_links || {
+          twitter: "",
+          facebook: "",
+          instagram: "",
+          discord: "",
+        },
+      });
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateUserProfile({
+        bio: formData.bio,
+        social_links: formData.social_links,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
+  };
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => {
+        if (name.startsWith("social_")) {
+          const social = name.split("_")[1];
+          return {
+            ...prev,
+            social_links: {
+              ...prev.social_links,
+              [social]: value,
+            },
+          };
+        }
+        return {
+          ...prev,
+          [name]: value,
+        };
+      });
+    },
+    []
+  );
 
   const getInitials = (firstName?: string, lastName?: string) => {
     const first = firstName?.charAt(0) || "";
@@ -42,77 +190,6 @@ const Profile = () => {
     return `hsl(${h}, 70%, 50%)`;
   };
 
-  const handleImageUpload = async (
-    file: File,
-    type: "profile_pic" | "background_pic"
-  ) => {
-    try {
-      setIsUploading(true);
-      const urlString = await uploadImage(file, type);
-      setFormData((prev) => ({
-        ...prev,
-        [type]: urlString,
-      }));
-    } catch (error) {
-      console.error("Upload error:", error);
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert("Failed to upload image. Please try again.");
-      }
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "profile_pic" | "background_pic"
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      await handleImageUpload(file, type);
-    } catch (error) {
-      console.error("File change error:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateUserProfile({
-        bio: formData.bio,
-        social_links: formData.social_links,
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    if (name.startsWith("social_")) {
-      const social = name.split("_")[1];
-      setFormData((prev) => ({
-        ...prev,
-        social_links: {
-          ...prev.social_links,
-          [social]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       {/* Background Image */}
@@ -121,25 +198,21 @@ const Profile = () => {
           className="absolute inset-0 bg-cover bg-center transition-all duration-300"
           style={{
             backgroundImage: `url(${
-              formData.background_pic || "/public/background_placeholder.jpg"
+              formData.background_pic || "/backgound_placeholder.jpg"
             })`,
+            backgroundPosition: "center",
+            backgroundSize: "cover",
           }}
         >
           <div className="absolute inset-0 bg-black opacity-40"></div>
         </div>
         {isEditing && (
-          <>
-            <input
-              type="file"
-              ref={backgroundInputRef}
-              onChange={(e) => handleFileChange(e, "background_pic")}
-              accept="image/*"
-              className="hidden"
-            />
+          <div {...backgroundRootProps()} className="absolute bottom-4 right-4">
+            <input {...backgroundInputProps()} />
             <button
-              onClick={() => backgroundInputRef.current?.click()}
+              type="button"
               disabled={isUploading}
-              className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-105"
+              className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-105"
             >
               {isUploading ? (
                 <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
@@ -150,7 +223,7 @@ const Profile = () => {
                 />
               )}
             </button>
-          </>
+          </div>
         )}
       </div>
 
@@ -160,41 +233,35 @@ const Profile = () => {
           {/* Profile Header */}
           <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5">
             <div className="relative">
-              <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg transition-all duration-300">
-                {formData.profile_pic ? (
-                  <img
-                    src={formData.profile_pic}
-                    alt="Profile"
-                    className="h-full w-full object-cover transition-all duration-300"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      setFormData((prev) => ({ ...prev, profile_pic: "" }));
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-white text-xl font-bold transition-all duration-300"
-                    style={{
-                      backgroundColor: stringToColor(
-                        `${user?.given_name} ${user?.family_name}`
-                      ),
-                    }}
-                  >
-                    {getInitials(user?.given_name, user?.family_name)}
-                  </div>
-                )}
-              </div>
-              {isEditing && (
-                <>
-                  <input
-                    type="file"
-                    ref={profileInputRef}
-                    onChange={(e) => handleFileChange(e, "profile_pic")}
-                    accept="image/*"
-                    className="hidden"
-                  />
+              <div {...profileRootProps()} className="relative">
+                <input {...profileInputProps()} />
+                <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg transition-all duration-300">
+                  {formData.profile_pic ? (
+                    <img
+                      src={formData.profile_pic}
+                      alt="Profile"
+                      className="h-full w-full object-cover transition-all duration-300"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        setFormData((prev) => ({ ...prev, profile_pic: "" }));
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-white text-xl font-bold transition-all duration-300"
+                      style={{
+                        backgroundColor: stringToColor(
+                          `${user?.given_name} ${user?.family_name}`
+                        ),
+                      }}
+                    >
+                      {getInitials(user?.given_name, user?.family_name)}
+                    </div>
+                  )}
+                </div>
+                {isEditing && (
                   <button
-                    onClick={() => profileInputRef.current?.click()}
+                    type="button"
                     disabled={isUploading}
                     className="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full text-white shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105"
                   >
@@ -204,8 +271,8 @@ const Profile = () => {
                       <FaCamera size={14} />
                     )}
                   </button>
-                </>
-              )}
+                )}
+              </div>
             </div>
 
             <div className="flex-1 text-center sm:text-left">
@@ -224,7 +291,6 @@ const Profile = () => {
               {isEditing ? "Cancel" : "Edit Profile"}
             </button>
           </div>
-
           {/* Profile Form/Info */}
           {isEditing ? (
             <form onSubmit={handleSubmit} className="mt-6 space-y-6">
@@ -236,7 +302,7 @@ const Profile = () => {
                   name="bio"
                   value={formData.bio}
                   onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white p-3"
                   rows={4}
                   placeholder="Tell us about yourself..."
                 />
@@ -286,10 +352,10 @@ const Profile = () => {
               <div className="flex justify-end pt-4">
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isUploading}
                   className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  {isLoading ? "Saving..." : "Save Changes"}
+                  {isUploading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

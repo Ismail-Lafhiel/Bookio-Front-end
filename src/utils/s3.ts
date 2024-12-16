@@ -1,25 +1,49 @@
-import { uploadData } from 'aws-amplify/storage';
+import { uploadData } from "aws-amplify/storage";
+import { v4 as uuidv4 } from "uuid";
+import { getCurrentUser } from "aws-amplify/auth";
 
-export const uploadImageToS3 = async (file: File, folder: string) => {
+const bucket = import.meta.env.VITE_S3_BUCKET;
+
+export const uploadImageToS3 = async (
+  file: File,
+  type: "profile_pic" | "background_pic"
+): Promise<string> => {
   try {
-    // Creating a unique file name
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+    // Get the current user to use their ID in the file path
+    const user = await getCurrentUser();
 
-    // Upload to S3
+    // Generate a unique filename with user ID and timestamp
+    const uniqueFileName = `${type}/${
+      user.username
+    }-${uuidv4()}${getFileExtension(file)}`;
+
+    // Upload the file to S3
     const result = await uploadData({
-      key: fileName,
+      key: uniqueFileName,
       data: file,
       options: {
-        contentType: file.type,
         //@ts-ignore
-        accessLevel: 'public'
-      }
+        accessLevel: "public",
+        contentType: file.type,
+        metadata: {
+          uploadedBy: user.username,
+          uploadType: type,
+        },
+      },
     }).result;
 
     return result.key;
   } catch (error) {
-    console.error('Error uploading file:', error);
-    throw error;
+    console.error("S3 Upload Error:", error);
+    throw new Error("Image upload failed");
   }
+};
+
+// Helper function to get file extension
+const getFileExtension = (file: File) => {
+  return file.name.slice(file.name.lastIndexOf(".")) || "";
+};
+
+export const getS3ImageUrl = (key: string) => {
+  return `https://${bucket}.s3.amazonaws.com/${key}`;
 };
