@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { FaSearch, FaStar } from "react-icons/fa";
+import BooksData from "../data/book";
 
 interface Book {
   id: string;
@@ -15,56 +16,7 @@ interface Book {
 }
 
 const Books = () => {
-  const [books, setBooks] = useState<Book[]>([
-    {
-      id: "1",
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      cover: "/book-1.jpg",
-      description:
-        "A vibrant portrait of the Jazz Age and a searching look at the American Dream. Through the story of Jay Gatsby's desperate pursuit of his lost love...",
-      rating: 4.5,
-      category: "Classic",
-      publishDate: "2023",
-      pages: 324,
-    },
-    {
-      id: "2",
-      title: "Dune",
-      author: "Frank Herbert",
-      cover: "/book-2.jpg",
-      description:
-        "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange...",
-      rating: 5,
-      category: "Science",
-      publishDate: "2021",
-      pages: 688,
-    },
-    {
-      id: "3",
-      title: "Pride and Prejudice",
-      author: "Jane Austen",
-      cover: "/book-3.jpg",
-      description:
-        "The story follows the main character Elizabeth Bennet as she deals with issues of manners, upbringing, morality, education, and marriage in the society of the landed gentry of early 19th-century England...",
-      rating: 4.7,
-      category: "Classic",
-      publishDate: "2020",
-      pages: 432,
-    },
-    {
-      id: "4",
-      title: "The Innovators",
-      author: "Walter Isaacson",
-      cover: "/book-4.jpg",
-      description:
-        "The Innovators is Walter Isaacson's revealing story of the people who created the computer and the Internet. What were the talents that allowed certain inventors and entrepreneurs to turn their visionary ideas into disruptive realities?",
-      rating: 4.3,
-      category: "Biography",
-      publishDate: "2022",
-      pages: 560,
-    },
-  ]);
+  const [books, setBooks] = useState<Book[]>(BooksData);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -197,70 +149,65 @@ const Books = () => {
           animate="show"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-16"
         >
-          {books
-            .filter(
-              (book) =>
-                selectedCategory === "All" || book.category === selectedCategory
-            )
-            .map((book) => (
-              <motion.div key={book.id} variants={item} className="relative">
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden
-                    shadow-[0_2px_8px_rgba(0,0,0,0.1)]
-                    hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]
-                    transition-all duration-300"
-                >
-                  <div className="relative h-[280px] group overflow-hidden rounded-t-lg">
-                    <img
-                      src={book.cover}
-                      alt={book.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                      <h3 className="text-lg font-semibold text-white mb-1">
-                        {book.title}
-                      </h3>
-                      <p className="text-sm text-gray-300">{book.author}</p>
-                    </div>
+          {currentBooks.map((book) => (
+            <motion.div key={book.id} variants={item} className="relative">
+              <motion.div
+                whileHover={{ y: -5 }}
+                className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden
+          shadow-[0_2px_8px_rgba(0,0,0,0.1)]
+          hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]
+          transition-all duration-300"
+              >
+                <div className="relative h-[280px] group overflow-hidden rounded-t-lg">
+                  <img
+                    src={book.cover}
+                    alt={book.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <h3 className="text-lg font-semibold text-white mb-1">
+                      {book.title}
+                    </h3>
+                    <p className="text-sm text-gray-300">{book.author}</p>
                   </div>
+                </div>
 
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < book.rating
-                                ? "text-yellow-400"
-                                : "text-gray-300 dark:text-gray-600"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {book.pages} pages
-                      </span>
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < book.rating
+                              ? "text-yellow-400"
+                              : "text-gray-300 dark:text-gray-600"
+                          }`}
+                        />
+                      ))}
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
-                      {book.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Published {book.publishDate}
-                      </span>
-                      <button
-                        className="px-3 py-1 bg-primary text-white text-sm rounded 
-                         hover:bg-primary-dark transition-colors duration-300"
-                      >
-                        Read More
-                      </button>
-                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {book.pages} pages
+                    </span>
                   </div>
-                </motion.div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
+                    {book.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Published {book.publishDate}
+                    </span>
+                    <button
+                      className="px-3 py-1 bg-primary text-white text-sm rounded 
+               hover:bg-primary-dark transition-colors duration-300"
+                    >
+                      Read More
+                    </button>
+                  </div>
+                </div>
               </motion.div>
-            ))}
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* Pagination */}

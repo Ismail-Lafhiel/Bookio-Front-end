@@ -1,0 +1,148 @@
+const BooksData = [
+  {
+    id: "1",
+    title: "The Great Gatsby",
+    author: "F. Scott Fitzgerald",
+    cover: "/book-1.jpg",
+    description:
+      "A vibrant portrait of the Jazz Age and a searching look at the American Dream. Through the story of Jay Gatsby's desperate pursuit of his lost love...",
+    rating: 4.5,
+    category: "Classic",
+    publishDate: "2023",
+    pages: 324,
+  },
+  {
+    id: "2",
+    title: "Dune",
+    author: "Frank Herbert",
+    cover: "/book-2.jpg",
+    description:
+      "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange...",
+    rating: 5,
+    category: "Science",
+    publishDate: "2021",
+    pages: 688,
+  },
+  {
+    id: "3",
+    title: "Pride and Prejudice",
+    author: "Jane Austen",
+    cover: "/book-3.jpg",
+    description:
+      "The story follows the main character Elizabeth Bennet as she deals with issues of manners, upbringing, morality, education, and marriage in the society of the landed gentry of early 19th-century England...",
+    rating: 4.7,
+    category: "Classic",
+    publishDate: "2020",
+    pages: 432,
+  },
+  {
+    id: "4",
+    title: "The Innovators",
+    author: "Walter Isaacson",
+    cover: "/book-4.jpg",
+    description:
+      "The Innovators is Walter Isaacson's revealing story of the people who created the computer and the Internet. What were the talents that allowed certain inventors and entrepreneurs to turn their visionary ideas into disruptive realities?",
+    rating: 4.3,
+    category: "Biography",
+    publishDate: "2022",
+    pages: 560,
+  },
+  {
+    id: "5",
+    title: "Project Hail Mary",
+    author: "Andy Weir",
+    cover: "/book-5.jpg",
+    description:
+      "Ryland Grace is the sole survivor on a desperate, last-chance mission—and if he fails, humanity and the Earth itself will perish. The only problem? He doesn't remember his name, let alone the nature of his assignment...",
+    rating: 4.8,
+    category: "Science",
+    publishDate: "2021",
+    pages: 496,
+  },
+  {
+    id: "6",
+    title: "To Kill a Mockingbird",
+    author: "Harper Lee",
+    cover: "/book-6.jpg",
+    description:
+      "Through the young eyes of Scout and Jem Finch, Harper Lee explores with exuberant humor the irrationality of adult attitudes to race and class in the Deep South of the 1930s...",
+    rating: 4.9,
+    category: "Classic",
+    publishDate: "2022",
+    pages: 336,
+  },
+  {
+    id: "7",
+    title: "The Code Breaker",
+    author: "Walter Isaacson",
+    cover: "/book-7.jpg",
+    description:
+      "The story of Jennifer Doudna and her colleagues' development of CRISPR technology, a tool that can edit DNA. The book also delves into the bioethical questions raised by this revolutionary technology...",
+    rating: 4.6,
+    category: "Biography",
+    publishDate: "2021",
+    pages: 536,
+  },
+  {
+    id: "8",
+    title: "Foundation",
+    author: "Isaac Asimov",
+    cover: "/book-8.jpg",
+    description:
+      "For twelve thousand years the Galactic Empire has ruled supreme. Now it is dying. But only Hari Seldon, creator of the revolutionary science of psychohistory, can see into the future...",
+    rating: 4.4,
+    category: "Science",
+    publishDate: "2021",
+    pages: 244,
+  },
+  {
+    id: "9",
+    title: "Steve Jobs",
+    author: "Walter Isaacson",
+    cover: "/book-9.jpg",
+    description:
+      "Based on more than forty interviews with Steve Jobs conducted over two years, as well as interviews with more than 100 family members, friends, adversaries, competitors, and colleagues...",
+    rating: 4.7,
+    category: "Biography",
+    publishDate: "2022",
+    pages: 656,
+  },
+  {
+    id: "10",
+    title: "1984",
+    author: "George Orwell",
+    cover: "/book-10.jpg",
+    description:
+      "Among the seminal texts of the 20th century, Nineteen Eighty-Four is a rare work that grows more haunting as its futuristic purgatory becomes more real...",
+    rating: 4.8,
+    category: "Classic",
+    publishDate: "2021",
+    pages: 328,
+  },
+  {
+    id: "11",
+    title: "A Brief History of Time",
+    author: "Stephen Hawking",
+    cover: "/book-11.jpg",
+    description:
+      "A landmark volume in science writing by one of the great minds of our time, Stephen Hawking's book explores such profound questions as: How did the universe begin—and what made its start possible?",
+    rating: 4.5,
+    category: "Science",
+    publishDate: "2023",
+    pages: 212,
+  },
+  {
+    id: "12",
+    title: "The Diary of a Young Girl",
+    author: "Anne Frank",
+    cover: "/book-12.jpg",
+    description:
+      "Discovered in the attic in which she spent the last years of her life, Anne Frank's remarkable diary has since become a world classic—a powerful reminder of the horrors of war...",
+    rating: 4.9,
+    category: "Biography",
+    publishDate: "2023",
+    pages: 283,
+  },
+];
+
+export default BooksData;
