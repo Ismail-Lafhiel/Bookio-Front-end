@@ -1,66 +1,88 @@
-import { RouteObject } from 'react-router-dom';
-import MainLayout from '../layouts/MainLayout';
-import GuestLayout from '../layouts/GuestLayout';
-import AuthLayout from '../layouts/AuthLayout';
-import ForgotPassword from '../components/auth/ForgotPassword';
-import Profile from '../components/auth/Profile';
-import Register from '../components/auth/Register';
-import Login from '../components/auth/Login';
-import NotFound from '../components/NotFound';
-import About from '../components/About';
-import Home from '../components/Home';
+import { RouteObject } from "react-router-dom";
+import { lazy } from "react";
+import MainLayout from "../layouts/MainLayout";
+import GuestLayout from "../layouts/GuestLayout";
+import AuthLayout from "../layouts/AuthLayout";
+
+// Lazy load components for better performance
+const Home = lazy(() => import("../components/Home"));
+const About = lazy(() => import("../components/About"));
+const NotFound = lazy(() => import("../components/NotFound"));
+const Login = lazy(() => import("../components/auth/Login"));
+const Register = lazy(() => import("../components/auth/Register"));
+const ForgotPassword = lazy(() => import("../components/auth/ForgotPassword"));
+const Profile = lazy(() => import("../components/auth/Profile"));
+const VerifyEmail = lazy(() => import("../components/auth/VerifyEmail"));
 
 export const publicRoutes: RouteObject[] = [
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     children: [
       {
-        path: '/',
-        element: <Home />
+        index: true,
+        element: <Home />,
       },
       {
-        path: '/about',
-        element: <About />
+        path: "about",
+        element: <About />,
       },
       {
-        path: '*',
-        element: <NotFound />
-      }
-    ]
-  }
+        path: "*",
+        element: <NotFound />,
+      },
+    ],
+  },
 ];
 
 export const guestRoutes: RouteObject[] = [
   {
-    path: '/',
+    path: "/",
     element: <GuestLayout />,
     children: [
       {
-        path: '/login',
-        element: <Login />
+        path: "login",
+        element: <Login />,
       },
       {
-        path: '/register',
-        element: <Register />
+        path: "register",
+        element: <Register />,
       },
       {
-        path: '/forgot-password',
-        element: <ForgotPassword />
-      }
-    ]
-  }
+        path: "verify-email",
+        element: <VerifyEmail />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
+      },
+    ],
+  },
 ];
 
 export const protectedRoutes: RouteObject[] = [
   {
-    path: '/',
+    path: "/",
     element: <AuthLayout />,
     children: [
       {
-        path: '/profile',
-        element: <Profile />
+        path: "profile",
+        element: <Profile />,
       },
-    ]
-  }
+      // {
+      //   path: 'settings',
+      //   element: <Settings />
+      // },
+      // {
+      //   path: 'dashboard',
+      //   element: <Dashboard />
+      // }
+    ],
+  },
 ];
+
+export const routes: RouteObject[] = [
+    ...publicRoutes,
+    ...guestRoutes,
+    ...protectedRoutes
+  ];

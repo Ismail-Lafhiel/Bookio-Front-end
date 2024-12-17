@@ -10,14 +10,15 @@ import {
 import { signUp } from "aws-amplify/auth";
 import { Button } from "../ui/Button";
 import { FormInput } from "../ui/FormInput";
+
+import toast from "react-hot-toast";
+import RegisterForm from "../../interfaces/registerForm";
+import FormErrors from "../../interfaces/formError";
 import {
   validateEmail,
   validatePassword,
   validateRequired,
-} from "../../interfaces/Validation";
-import toast from "react-hot-toast";
-import RegisterForm from "../../interfaces/registerForm";
-import FormErrors from "../../interfaces/formError";
+} from "../../interfaces/validation";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -106,7 +107,10 @@ export default function Register() {
 
       toast.success("Registration successful! Please verify your email.");
       navigate("/verify-email", {
-        state: { email: formData.email },
+        state: {
+          username: formData.email,
+          email: formData.email,
+        },
         replace: true,
       });
     } catch (error: any) {
@@ -118,9 +122,9 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
