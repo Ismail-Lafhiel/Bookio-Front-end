@@ -1,33 +1,30 @@
-// @ts-ignore
-import { Amplify } from 'aws-amplify';
+import { Amplify } from "aws-amplify";
 
 Amplify.configure({
   Auth: {
     Cognito: {
-      //required
-      userPoolId: 'eu-north-1_IAZ0ABjbx',
-      userPoolClientId: '55rpd0d2pl13cbmplb4qa26vva',
-      
-      // optional
-      region: 'eu-north-1',
-      signUpVerificationMethod: 'code',
+      userPoolId: "eu-north-1_usIFKFG5g",
+      userPoolClientId: "5o3pvrps7kqnd1g556qo82ukgm",
+
+      region: "eu-north-1",
+      signUpVerificationMethod: "code",
       loginWith: {
         email: true,
-        username: false,
-        phone: false
+        username: true,
+        phone: false,
       },
       userAttributes: {
         email: {
           required: true,
           // @ts-ignore
-          mutable: true
+          mutable: true,
         },
         name: {
           required: true,
           // @ts-ignore
-          mutable: true
-        }
-      }
-    }
-  }
+          mutable: true,
+        },
+      },
+    },
+  },
 });
