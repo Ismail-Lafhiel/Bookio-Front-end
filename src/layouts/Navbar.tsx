@@ -1,10 +1,9 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import DarkModeToggle from "../components/ui/DarkModeToggle";
-import { getUrl } from "aws-amplify/storage";
 
 const navigation = [
   { name: "Home", href: "/" },

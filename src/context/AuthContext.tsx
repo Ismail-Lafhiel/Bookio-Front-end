@@ -15,9 +15,6 @@ import {
   confirmResetPassword,
   updateUserAttributes,
 } from "aws-amplify/auth";
-
-import { uploadData } from "aws-amplify/storage";
-import { v4 as uuidv4 } from "uuid";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
 import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";

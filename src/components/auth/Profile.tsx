@@ -4,10 +4,13 @@ import { useAuth } from "../../context/AuthContext";
 import {
   FaCamera,
   FaDiscord,
+  FaEdit,
   FaFacebook,
   FaInstagram,
-  FaTwitter,
+  FaTimes,
 } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+
 
 interface FormData {
   bio: string;
@@ -171,39 +174,54 @@ const Profile: React.FC = () => {
     return `hsl(${h}, 70%, 50%)`;
   };
 
+  const getSocialIcon = (platform: string) => {
+    switch (platform) {
+      case "twitter":
+        return <FaXTwitter className="text-gray-400" size={18} />;
+      case "facebook":
+        return <FaFacebook className="text-gray-400" size={18} />;
+      case "instagram":
+        return <FaInstagram className="text-gray-400" size={18} />;
+      case "discord":
+        return <FaDiscord className="text-gray-400" size={18} />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
-      {/* Background Image */}
-      <div className="h-64 w-full bg-cover bg-center relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Hero Section with Background Image */}
+      <div className="h-[200px] lg:h-[250px] w-full bg-cover bg-center relative">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-all duration-300"
+          className="absolute inset-0 bg-cover bg-center transition-all duration-300 rounded-b-[1.5rem]"
           style={{
             backgroundImage: `url(${
-              formData.background_pic || "/backgound_placeholder.jpg"
+              formData.background_pic || "/background_placeholder.jpg"
             })`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
         >
-          <div className="absolute inset-0 bg-black opacity-40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60 rounded-b-[1.5rem]"></div>
         </div>
         {isEditing && (
           <div
             {...backgroundDropzone.getRootProps()}
-            className="absolute bottom-4 right-4"
+            className="absolute top-4 right-4 z-10"
           >
             <input {...backgroundDropzone.getInputProps()} />
             <button
               type="button"
               disabled={isUploading}
-              className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-105"
+              className="bg-white/90 dark:bg-gray-800/90 p-2 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
             >
               {isUploading ? (
                 <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
               ) : (
                 <FaCamera
                   className="text-gray-600 dark:text-gray-300"
-                  size={18}
+                  size={16}
                 />
               )}
             </button>
@@ -212,192 +230,183 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Profile Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10 pb-20">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
           {/* Profile Header */}
-          <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5">
-            <div className="relative">
-              <div {...profileDropzone.getRootProps()} className="relative">
-                <input {...profileDropzone.getInputProps()} />
-                <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg transition-all duration-300">
-                  {formData.profile_pic ? (
-                    <img
-                      src={formData.profile_pic}
-                      alt="Profile"
-                      className="h-full w-full object-cover transition-all duration-300"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        setFormData((prev) => ({ ...prev, profile_pic: null }));
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-white text-xl font-bold transition-all duration-300"
-                      style={{
-                        backgroundColor: stringToColor(
-                          `${user?.given_name} ${user?.family_name}`
-                        ),
-                      }}
+          <div className="p-4 lg:p-6 border-b dark:border-gray-700">
+            <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
+              {/* Profile Picture */}
+              <div className="relative">
+                <div {...profileDropzone.getRootProps()} className="relative">
+                  <input {...profileDropzone.getInputProps()} />
+                  <div className="h-24 w-24 lg:h-28 lg:w-28 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl transition-all duration-300 hover:shadow-2xl">
+                    {formData.profile_pic ? (
+                      <img
+                        src={formData.profile_pic}
+                        alt="Profile"
+                        className="h-full w-full object-cover transition-all duration-300"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          setFormData((prev) => ({
+                            ...prev,
+                            profile_pic: null,
+                          }));
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-white text-2xl font-bold transition-all duration-300"
+                        style={{
+                          backgroundColor: stringToColor(
+                            `${user?.given_name} ${user?.family_name}`
+                          ),
+                        }}
+                      >
+                        {getInitials()}
+                      </div>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <button
+                      type="button"
+                      disabled={isUploading}
+                      className="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full text-white shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105"
                     >
-                      {getInitials()}
-                    </div>
+                      {isUploading ? (
+                        <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <FaCamera size={12} />
+                      )}
+                    </button>
                   )}
                 </div>
-                {isEditing && (
-                  <button
-                    type="button"
-                    disabled={isUploading}
-                    className="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full text-white shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105"
-                  >
-                    {isUploading ? (
-                      <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full" />
-                    ) : (
-                      <FaCamera size={14} />
-                    )}
-                  </button>
+              </div>
+
+              {/* User Info */}
+              <div className="flex-1 text-center lg:text-left space-y-1">
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                  {user?.given_name} {user?.family_name}
+                </h1>
+                <p className="text-gray-500 dark:text-gray-400 text-base">
+                  @{user?.preferred_username}
+                </p>
+                {!isEditing && formData.bio && (
+                  <p className="text-gray-600 dark:text-gray-300 mt-2 max-w-2xl text-sm">
+                    {formData.bio}
+                  </p>
                 )}
               </div>
-            </div>
 
-            <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-xl font-bold dark:text-white">
-                {user?.given_name} {user?.family_name}
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                @{user?.preferred_username}
-              </p>
+              {/* Edit Button */}
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 shadow-md text-sm font-medium flex items-center gap-2"
+              >
+                {isEditing ? (
+                  <>
+                    <FaTimes size={14} />
+                    Cancel
+                  </>
+                ) : (
+                  <>
+                    <FaEdit size={14} />
+                    Edit Profile
+                  </>
+                )}
+              </button>
             </div>
-
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 shadow-md text-sm font-medium"
-            >
-              {isEditing ? "Cancel" : "Edit Profile"}
-            </button>
           </div>
-          {/* Profile Form/Info */}
-          {isEditing ? (
-            <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bio
-                </label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white p-3"
-                  rows={4}
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
 
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Social Links
-                </h3>
-                <div className="grid grid-cols-1 gap-4">
-                  {Object.entries(formData.social_links).map(
-                    ([platform, url]) => (
-                      <div key={platform} className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                          {platform}
-                        </label>
-                        <div className="relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            {platform === "twitter" && (
-                              <FaTwitter className="text-gray-400" />
-                            )}
-                            {platform === "facebook" && (
-                              <FaFacebook className="text-gray-400" />
-                            )}
-                            {platform === "instagram" && (
-                              <FaInstagram className="text-gray-400" />
-                            )}
-                            {platform === "discord" && (
-                              <FaDiscord className="text-gray-400" />
-                            )}
+          {/* Profile Form/Info with smooth transition */}
+          <div className="transition-all duration-300 ease-in-out">
+            {isEditing ? (
+              <form onSubmit={handleSubmit} className="p-4 lg:p-6 space-y-6">
+                {/* Bio Section */}
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Bio
+                  </label>
+                  <textarea
+                    name="bio"
+                    value={formData.bio || ""}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white p-3 text-sm"
+                    rows={4}
+                    placeholder="Tell us about yourself..."
+                  />
+                </div>
+
+                {/* Social Links Section */}
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
+                  <h3 className="text-base font-medium text-gray-900 dark:text-white mb-4">
+                    Social Links
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(formData.social_links || {}).map(
+                      ([platform, url]) => (
+                        <div key={platform} className="space-y-1">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
+                            {platform}
+                          </label>
+                          <div className="relative rounded-lg shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              {getSocialIcon(platform)}
+                            </div>
+                            <input
+                              type="text"
+                              name={`social_${platform}`}
+                              value={url || ""}
+                              onChange={handleChange}
+                              className="block w-full pl-10 pr-3 py-2 text-sm border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                              placeholder={`Your ${platform} URL`}
+                            />
                           </div>
-                          <input
-                            type="text"
-                            name={`social_${platform}`}
-                            value={url}
-                            onChange={handleChange}
-                            className="block w-full pl-10 pr-3 py-2 border-gray-300 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            placeholder={`Your ${platform} URL`}
-                          />
                         </div>
-                      </div>
-                    )
-                  )}
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end pt-4">
-                <button
-                  type="submit"
-                  disabled={isUploading}
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                >
-                  {isUploading ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="mt-6 space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                  Bio
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {formData.bio || "No bio added yet"}
-                </p>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Social Links
-                </h3>
-                <div className="flex space-x-4">
-                  {Object.entries(formData.social_links).map(
-                    ([platform, url]) => {
-                      if (!url) return null;
-
-                      let Icon;
-                      switch (platform) {
-                        case "twitter":
-                          Icon = FaTwitter;
-                          break;
-                        case "facebook":
-                          Icon = FaFacebook;
-                          break;
-                        case "instagram":
-                          Icon = FaInstagram;
-                          break;
-                        case "discord":
-                          Icon = FaDiscord;
-                          break;
-                        default:
-                          return null;
-                      }
-
-                      return (
-                        <a
-                          key={platform}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors duration-300"
-                        >
-                          <Icon size={24} />
-                        </a>
-                      );
-                    }
-                  )}
+                {/* Save Button */}
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isUploading}
+                    className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 text-sm font-medium"
+                  >
+                    {isUploading ? "Saving..." : "Save Changes"}
+                  </button>
                 </div>
+              </form>
+            ) : (
+              <div className="p-4 lg:p-6 space-y-4">
+                {/* Social Links Display */}
+                {Object.entries(formData.social_links || {}).some(
+                  ([_, url]) => url
+                ) && (
+                  <div className="flex flex-wrap gap-3">
+                    {Object.entries(formData.social_links || {}).map(
+                      ([platform, url]) =>
+                        url && (
+                          <a
+                            key={platform}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm"
+                          >
+                            {getSocialIcon(platform)}
+                            <span className="capitalize text-gray-700 dark:text-gray-300">
+                              {platform}
+                            </span>
+                          </a>
+                        )
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
