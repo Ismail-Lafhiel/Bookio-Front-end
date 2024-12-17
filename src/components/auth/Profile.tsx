@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -8,30 +8,34 @@ import {
   FaInstagram,
   FaTwitter,
 } from "react-icons/fa";
-import { uploadImageToS3 } from "../../utils/s3";
 
 interface FormData {
   bio: string;
-  profile_pic: string;
-  background_pic: string;
+  profile_pic?: string | null;
+  background_pic?: string | null;
   social_links: {
-    twitter: string;
-    facebook: string;
-    instagram: string;
-    discord: string;
+    twitter?: string;
+    facebook?: string;
+    instagram?: string;
+    discord?: string;
   };
 }
 
-const Profile = () => {
-  const { user, updateUserProfile } = useAuth();
+const Profile: React.FC = () => {
+  const {
+    user,
+    updateUserProfile,
+    uploadProfilePicture,
+    uploadBackgroundPicture,
+  } = useAuth();
+
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    bio: user?.bio || "",
-    profile_pic: user?.profile_pic || "",
-    background_pic: user?.background_pic || "",
-    //@ts-ignore
-    social_links: user?.social_links || {
+    bio: "",
+    profile_pic: null,
+    background_pic: null,
+    social_links: {
       twitter: "",
       facebook: "",
       instagram: "",
@@ -39,96 +43,13 @@ const Profile = () => {
     },
   });
 
-  const handleFileChange = useCallback(
-    async (file: File, type: "profile_pic" | "background_pic") => {
-      try {
-        setIsUploading(true);
-
-        if (!file) throw new Error("No file selected");
-
-        const maxSize = 5 * 1024 * 1024;
-        if (file.size > maxSize) throw new Error("File size exceeds 5MB limit");
-
-        const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-        if (!allowedTypes.includes(file.type)) {
-          throw new Error(
-            "File type not supported. Please use JPEG, PNG or GIF"
-          );
-        }
-
-        const url = await uploadImageToS3(file, type);
-
-        setFormData((prev) => ({
-          ...prev,
-          [type]: url,
-        }));
-
-        await updateUserProfile({
-          ...formData,
-          [type]: url,
-        });
-      } catch (error) {
-        console.error("File upload failed:", error);
-        alert(
-          error instanceof Error
-            ? error.message
-            : "Upload failed. Please try again."
-        );
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [updateUserProfile, formData]
-  );
-
-  const onBackgroundDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      if (acceptedFiles.length > 0) {
-        await handleFileChange(acceptedFiles[0], "background_pic");
-      }
-    },
-    [handleFileChange]
-  );
-
-  const onProfileDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      if (acceptedFiles.length > 0) {
-        await handleFileChange(acceptedFiles[0], "profile_pic");
-      }
-    },
-    [handleFileChange]
-  );
-
-  // Initialize dropzone hooks at the top level
-  const {
-    getRootProps: backgroundRootProps,
-    getInputProps: backgroundInputProps,
-  } = useDropzone({
-    onDrop: onBackgroundDrop,
-    accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
-    },
-    maxSize: 5 * 1024 * 1024,
-    multiple: false,
-  });
-
-  const { getRootProps: profileRootProps, getInputProps: profileInputProps } =
-    useDropzone({
-      onDrop: onProfileDrop,
-      accept: {
-        "image/*": [".jpeg", ".jpg", ".png", ".gif"],
-      },
-      maxSize: 5 * 1024 * 1024,
-      multiple: false,
-    });
-
+  // Sync form data with user on mount and user changes
   useEffect(() => {
     if (user) {
       setFormData({
         bio: user.bio || "",
-        profile_pic: user.profile_pic || "",
-        background_pic: user.background_pic || "",
-        //@ts-ignore
+        profile_pic: user.profile_pic || null,
+        background_pic: user.background_pic || null,
         social_links: user.social_links || {
           twitter: "",
           facebook: "",
@@ -139,6 +60,64 @@ const Profile = () => {
     }
   }, [user]);
 
+  // File upload handler
+  const handleFileUpload = useCallback(
+    async (file: File, type: "profile_pic" | "background_pic") => {
+      try {
+        setIsUploading(true);
+
+        // Validate file (size, type, etc.)
+        const uploadMethod =
+          type === "profile_pic"
+            ? uploadProfilePicture
+            : uploadBackgroundPicture;
+
+        const uploadedUrl = await uploadMethod(file);
+        console.log(`${type} uploaded successfully:`, uploadedUrl);
+
+        // Update form data
+        setFormData((prev) => ({
+          ...prev,
+          [type]: uploadedUrl,
+        }));
+      } catch (error) {
+        console.error(`${type} upload failed:`, error);
+        alert(`${type} upload failed. Please try again.`);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [uploadProfilePicture, uploadBackgroundPicture]
+  );
+
+  // Dropzone configurations
+  const backgroundDropzone = useDropzone({
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        handleFileUpload(acceptedFiles[0], "background_pic");
+      }
+    },
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+    },
+    maxSize: 5 * 1024 * 1024,
+    multiple: false,
+  });
+
+  const profileDropzone = useDropzone({
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        handleFileUpload(acceptedFiles[0], "profile_pic");
+      }
+    },
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+    },
+    maxSize: 5 * 1024 * 1024,
+    multiple: false,
+  });
+
+  // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -152,6 +131,7 @@ const Profile = () => {
     }
   };
 
+  // Input change handler
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -175,9 +155,10 @@ const Profile = () => {
     []
   );
 
-  const getInitials = (firstName?: string, lastName?: string) => {
-    const first = firstName?.charAt(0) || "";
-    const last = lastName?.charAt(0) || "";
+  // Utility functions for avatar
+  const getInitials = () => {
+    const first = user?.given_name?.charAt(0) || "";
+    const last = user?.family_name?.charAt(0) || "";
     return (first + last).toUpperCase();
   };
 
@@ -207,8 +188,11 @@ const Profile = () => {
           <div className="absolute inset-0 bg-black opacity-40"></div>
         </div>
         {isEditing && (
-          <div {...backgroundRootProps()} className="absolute bottom-4 right-4">
-            <input {...backgroundInputProps()} />
+          <div
+            {...backgroundDropzone.getRootProps()}
+            className="absolute bottom-4 right-4"
+          >
+            <input {...backgroundDropzone.getInputProps()} />
             <button
               type="button"
               disabled={isUploading}
@@ -233,8 +217,8 @@ const Profile = () => {
           {/* Profile Header */}
           <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5">
             <div className="relative">
-              <div {...profileRootProps()} className="relative">
-                <input {...profileInputProps()} />
+              <div {...profileDropzone.getRootProps()} className="relative">
+                <input {...profileDropzone.getInputProps()} />
                 <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg transition-all duration-300">
                   {formData.profile_pic ? (
                     <img
@@ -243,7 +227,7 @@ const Profile = () => {
                       className="h-full w-full object-cover transition-all duration-300"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        setFormData((prev) => ({ ...prev, profile_pic: "" }));
+                        setFormData((prev) => ({ ...prev, profile_pic: null }));
                       }}
                     />
                   ) : (
@@ -255,7 +239,7 @@ const Profile = () => {
                         ),
                       }}
                     >
-                      {getInitials(user?.given_name, user?.family_name)}
+                      {getInitials()}
                     </div>
                   )}
                 </div>

@@ -1,49 +1,58 @@
-import { uploadData } from "aws-amplify/storage";
-import { v4 as uuidv4 } from "uuid";
-import { getCurrentUser } from "aws-amplify/auth";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
+import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";
 
-const bucket = import.meta.env.VITE_S3_BUCKET;
+const s3Client = new S3Client({
+  region: import.meta.env.VITE_AWS_REGION,
+  credentials: fromCognitoIdentityPool({
+    client: new CognitoIdentityClient({ region: import.meta.env.VITE_AWS_REGION }),
+    identityPoolId: import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID!
+  })
+});
 
 export const uploadImageToS3 = async (
   file: File,
-  type: "profile_pic" | "background_pic"
+  folder: string
 ): Promise<string> => {
   try {
-    // Get the current user to use their ID in the file path
-    const user = await getCurrentUser();
+    // Validate environment variables
+    if (!import.meta.env.VITE_AWS_REGION || 
+        !import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID || 
+        !import.meta.env.VITE_S3_BUCKET) {
+      throw new Error("Missing required environment variables");
+    }
 
-    // Generate a unique filename with user ID and timestamp
-    const uniqueFileName = `${type}/${
-      user.username
-    }-${uuidv4()}${getFileExtension(file)}`;
+    // Create unique filename
+    const fileExtension = file.name.split('.').pop();
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileName = `${folder}/${timestamp}_${randomString}.${fileExtension}`;
 
-    // Upload the file to S3
-    const result = await uploadData({
-      key: uniqueFileName,
-      data: file,
-      options: {
-        //@ts-ignore
-        accessLevel: "public",
-        contentType: file.type,
-        metadata: {
-          uploadedBy: user.username,
-          uploadType: type,
-        },
-      },
-    }).result;
+    console.log('Starting upload:', {
+      bucket: import.meta.env.VITE_S3_BUCKET,
+      region: import.meta.env.VITE_AWS_REGION,
+      fileName,
+      contentType: file.type
+    });
 
-    return result.key;
+    // Create the upload command - removed ACL
+    const uploadCommand = new PutObjectCommand({
+      Bucket: import.meta.env.VITE_S3_BUCKET,
+      Key: fileName,
+      Body: file,
+      ContentType: file.type
+    });
+
+    // Attempt the upload
+    const uploadResult = await s3Client.send(uploadCommand);
+    console.log('Upload successful:', uploadResult);
+
+    // Construct and return the URL
+    const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/${fileName}`;
+    return fileUrl;
+
   } catch (error) {
-    console.error("S3 Upload Error:", error);
-    throw new Error("Image upload failed");
+    console.error('S3 Upload Error:', error);
+    throw error;
   }
-};
-
-// Helper function to get file extension
-const getFileExtension = (file: File) => {
-  return file.name.slice(file.name.lastIndexOf(".")) || "";
-};
-
-export const getS3ImageUrl = (key: string) => {
-  return `https://${bucket}.s3.amazonaws.com/${key}`;
 };

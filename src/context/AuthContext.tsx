@@ -18,6 +18,9 @@ import {
 
 import { uploadData } from "aws-amplify/storage";
 import { v4 as uuidv4 } from "uuid";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
+import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";
 
 interface User {
   email: string;
@@ -235,33 +238,85 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Create S3 client with Cognito Identity Pool credentials
+  const createS3Client = () => {
+    return new S3Client({
+      region: import.meta.env.VITE_AWS_REGION,
+      credentials: fromCognitoIdentityPool({
+        client: new CognitoIdentityClient({
+          region: import.meta.env.VITE_AWS_REGION,
+        }),
+        identityPoolId: import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID!,
+      }),
+    });
+  };
+
+  // Utility to generate unique filename
+  const generateUniqueFileName = (file: File, folder: string) => {
+    const fileExtension = file.name.split(".").pop();
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    return `${folder}/${timestamp}_${randomString}.${fileExtension}`;
+  };
+
+  // Upload method for profile picture
   const uploadProfilePicture = async (file: File) => {
     try {
+      // Validate environment variables
+      if (
+        !import.meta.env.VITE_AWS_REGION ||
+        !import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID ||
+        !import.meta.env.VITE_S3_BUCKET
+      ) {
+        throw new Error("Missing required environment variables");
+      }
+
       setIsLoading(true);
       setError(null);
 
-      // Generate a unique filename
-      const uniqueFileName = `profile-pics/${
-        user?.sub || "unknown"
-      }-${uuidv4()}${getFileExtension(file)}`;
+      // Generate unique filename
+      const fileName = generateUniqueFileName(file, "profile-pics");
 
-      // Upload the file
-      const result = await uploadData({
-        key: uniqueFileName,
-        data: file,
-        options: {
-          accessLevel: "protected", // Only accessible by the authenticated user
-          contentType: file.type,
-        },
-      }).result;
-
-      // Update user profile with the new profile picture URL
-      await updateUserProfile({
-        profile_pic: result.key,
+      console.log("Starting profile picture upload:", {
+        bucket: import.meta.env.VITE_S3_BUCKET,
+        region: import.meta.env.VITE_AWS_REGION,
+        fileName,
+        contentType: file.type,
       });
 
-      return result.key;
+      // Create S3 client
+      const s3Client = createS3Client();
+
+      // Create upload command
+      const uploadCommand = new PutObjectCommand({
+        Bucket: import.meta.env.VITE_S3_BUCKET,
+        Key: fileName,
+        Body: file,
+        ContentType: file.type,
+      });
+
+      // Attempt the upload
+      const uploadResult = await s3Client.send(uploadCommand);
+      console.log("Profile picture upload successful:", uploadResult);
+
+      // Construct file URL
+      const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${
+        import.meta.env.VITE_AWS_REGION
+      }.amazonaws.com/${fileName}`;
+
+      // Update user attributes with the S3 key
+      await updateUserAttributes({
+        userAttributes: {
+          "custom:profile_pic": fileUrl,
+        },
+      });
+
+      // Refresh user data
+      await checkAuth();
+
+      return fileUrl;
     } catch (err) {
+      console.error("Profile picture upload error:", err);
       setError(
         err instanceof Error ? err.message : "Profile picture upload failed"
       );
@@ -271,33 +326,64 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Similar method for background picture
   const uploadBackgroundPicture = async (file: File) => {
     try {
+      // Validate environment variables
+      if (
+        !import.meta.env.VITE_AWS_REGION ||
+        !import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID ||
+        !import.meta.env.VITE_S3_BUCKET
+      ) {
+        throw new Error("Missing required environment variables");
+      }
+
       setIsLoading(true);
       setError(null);
 
-      // Generate a unique filename
-      const uniqueFileName = `background-pics/${
-        user?.sub || "unknown"
-      }-${uuidv4()}${getFileExtension(file)}`;
+      // Generate unique filename
+      const fileName = generateUniqueFileName(file, "background-pics");
 
-      // Upload the file
-      const result = await uploadData({
-        key: uniqueFileName,
-        data: file,
-        options: {
-          accessLevel: "protected", // Only accessible by the authenticated user
-          contentType: file.type,
-        },
-      }).result;
-
-      // Update user profile with the new background picture URL
-      await updateUserProfile({
-        background_pic: result.key,
+      console.log("Starting background picture upload:", {
+        bucket: import.meta.env.VITE_S3_BUCKET,
+        region: import.meta.env.VITE_AWS_REGION,
+        fileName,
+        contentType: file.type,
       });
 
-      return result.key;
+      // Create S3 client
+      const s3Client = createS3Client();
+
+      // Create upload command
+      const uploadCommand = new PutObjectCommand({
+        Bucket: import.meta.env.VITE_S3_BUCKET,
+        Key: fileName,
+        Body: file,
+        ContentType: file.type,
+      });
+
+      // Attempt the upload
+      const uploadResult = await s3Client.send(uploadCommand);
+      console.log("Background picture upload successful:", uploadResult);
+
+      // Construct file URL
+      const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${
+        import.meta.env.VITE_AWS_REGION
+      }.amazonaws.com/${fileName}`;
+
+      // Update user attributes with the S3 key
+      await updateUserAttributes({
+        userAttributes: {
+          "custom:background_pic": fileUrl,
+        },
+      });
+
+      // Refresh user data
+      await checkAuth();
+
+      return fileUrl;
     } catch (err) {
+      console.error("Background picture upload error:", err);
       setError(
         err instanceof Error ? err.message : "Background picture upload failed"
       );
@@ -305,11 +391,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Helper function to get file extension
-  const getFileExtension = (file: File) => {
-    return file.name.slice(file.name.lastIndexOf(".")) || "";
   };
 
   return (

@@ -1,9 +1,10 @@
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import DarkModeToggle from "../components/ui/DarkModeToggle";
+import { getUrl } from "aws-amplify/storage";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -19,7 +20,6 @@ const userNavigation = [
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-
   const { user, isLoading, logout } = useAuth();
 
   const handleSignOut = async () => {
@@ -85,9 +85,16 @@ export default function Navbar() {
                         <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-200 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
                           <span className="sr-only">Open user menu</span>
                           <img
-                            className="h-8 w-8 rounded-full"
-                            src={`https://ui-avatars.com/api/?name=${getAvatarName()}`}
+                            className="h-8 w-8 rounded-full object-cover"
+                            src={
+                              user?.profile_pic ||
+                              `https://ui-avatars.com/api/?name=${getAvatarName()}`
+                            }
                             alt=""
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = `https://ui-avatars.com/api/?name=${getAvatarName()}`;
+                            }}
                           />
                         </Menu.Button>
                       </div>
