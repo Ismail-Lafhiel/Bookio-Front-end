@@ -83,10 +83,10 @@ const Home = () => {
       {/* Hero Section with Parallax */}
       <div ref={scrollRef} className="relative h-screen overflow-hidden">
         <motion.div style={{ y, opacity }} className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 to-primary-dark/95 mix-blend-multiply" />
           <div className="absolute inset-0 bg-[url('/library-bg.jpg')] bg-cover bg-center" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-primary/40"></div>
         </motion.div>
-
         <div className="relative h-full">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center items-center">
             <motion.div
@@ -139,7 +139,9 @@ const Home = () => {
 
                 {/* Trending Searches */}
                 <div className="mt-4 flex items-center justify-center gap-2 text-white">
-                  <span className="text-sm text-white font-bold">Trending:</span>
+                  <span className="text-sm text-white font-bold drop-shadow-xl">
+                    Trending:
+                  </span>
                   {["Fantasy", "Self-Help", "Mystery"].map((term, index) => (
                     <motion.span
                       key={term}

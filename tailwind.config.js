@@ -20,9 +20,9 @@ export default {
       },
       colors: {
         primary: {
-          light: "#6366F1", // Indigo-500
-          DEFAULT: "#4F46E5", // Indigo-600
-          dark: "#4338CA",
+          light: "#D97706", // Amber brown
+          DEFAULT: "#B45309", // Golden brown
+          dark: "#92400E", // Warm brown
         },
       },
     },
