@@ -4,6 +4,7 @@ import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import DarkModeToggle from "../components/ui/DarkModeToggle";
+import { FaBookOpen } from "react-icons/fa";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -42,7 +43,7 @@ export default function Navbar() {
   }
 
   return (
-    <Disclosure as="nav" className="bg-white dark:bg-gray-800">
+    <Disclosure as="nav" className="bg-gray-100 dark:bg-gray-900">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -50,11 +51,7 @@ export default function Navbar() {
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <Link to="/">
-                    <img
-                      className="h-8 w-8"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                      alt="Your Company"
-                    />
+                    <FaBookOpen className="h-8 w-8 text-primary" />
                   </Link>
                 </div>
                 <div className="hidden md:block">
@@ -65,7 +62,7 @@ export default function Navbar() {
                         to={item.href}
                         className={`${
                           location.pathname === item.href
-                            ? "bg-gray-900 dark:bg-gray-700 text-white"
+                            ? "bg-primary dark:bg-gray-700 text-white"
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                         } rounded-md px-3 py-2 text-sm font-medium`}
                       >
@@ -81,7 +78,7 @@ export default function Navbar() {
                   {user ? (
                     <Menu as="div" className="relative ml-3">
                       <div>
-                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-200 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
+                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-200 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
                           <span className="sr-only">Open user menu</span>
                           <img
                             className="h-8 w-8 rounded-full object-cover"
@@ -146,7 +143,7 @@ export default function Navbar() {
                       </Link>
                       <Link
                         to="/register"
-                        className="bg-indigo-600 text-white hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium"
+                        className="bg-primary text-white hover:bg-primary px-3 py-2 rounded-md text-sm font-medium"
                       >
                         Sign up
                       </Link>
@@ -160,7 +157,7 @@ export default function Navbar() {
 
               {/* Mobile menu button */}
               <div className="-mr-2 flex md:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-2 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
+                <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-2 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -244,7 +241,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="block rounded-md px-3 py-2 text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+                  className="block rounded-md px-3 py-2 text-base font-medium bg-primary text-white hover:bg-primary"
                 >
                   Sign up
                 </Link>
