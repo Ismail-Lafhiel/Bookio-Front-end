@@ -146,7 +146,7 @@ const Home = () => {
                     <motion.span
                       key={term}
                       whileHover={{ scale: 1.05 }}
-                      className="text-sm bg-primary px-3 py-1 rounded-full cursor-pointer hover:bg-primary-dark transition-colors"
+                      className="text-sm bg-primary/60 px-3 py-1 rounded-full cursor-pointer hover:bg-primary-dark transition-colors"
                     >
                       {term}
                     </motion.span>
