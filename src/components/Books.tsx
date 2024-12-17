@@ -68,8 +68,22 @@ const Books = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const booksPerPage = 8;
+
   const categories = ["All", "Classic", "Fiction", "Science", "Biography"];
 
+  // Pagination calculations
+  const filteredBooks = books.filter(
+    (book) => selectedCategory === "All" || book.category === selectedCategory
+  );
+
+  const indexOfLastBook = currentPage * booksPerPage;
+  const indexOfFirstBook = indexOfLastBook - booksPerPage;
+  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+
+  // Animation variants
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -81,6 +95,12 @@ const Books = () => {
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
+  };
+
+  // Handlers
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page when changing categories
   };
 
   return (
@@ -117,7 +137,6 @@ const Books = () => {
           </motion.p>
         </div>
       </div>
-
       {/* Search Bar */}
       <div className="container mx-auto px-4 -mt-6 relative z-20">
         <motion.div
@@ -134,23 +153,22 @@ const Books = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                             focus:outline-none focus:ring-2 focus:ring-primary/50 pl-10 text-sm
-                             transition-colors duration-300"
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                           focus:outline-none focus:ring-2 focus:ring-primary/50 pl-10 text-sm
+                           transition-colors duration-300"
                 />
                 <FaSearch className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
               </div>
             </div>
             <button
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark 
-                               transition-colors duration-300 text-sm font-medium"
+                             transition-colors duration-300 text-sm font-medium"
             >
               Search
             </button>
           </div>
         </motion.div>
-      </div>
-
+      </div>{" "}
       {/* Category Filter */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-wrap gap-2 justify-center mb-8">
@@ -160,12 +178,12 @@ const Books = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 shadow-sm
-                  ${
-                    selectedCategory === category
-                      ? "bg-primary text-white"
-                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }`}
-              onClick={() => setSelectedCategory(category)}
+                ${
+                  selectedCategory === category
+                    ? "bg-primary text-white"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              onClick={() => handleCategoryChange(category)}
             >
               {category}
             </motion.button>
@@ -177,7 +195,7 @@ const Books = () => {
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-16"
         >
           {books
             .filter(
@@ -244,6 +262,96 @@ const Books = () => {
               </motion.div>
             ))}
         </motion.div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300
+                ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                } shadow-sm`}
+            >
+              Previous
+            </button>
+
+            <div className="flex items-center gap-1">
+              {totalPages <= 7 ? (
+                // If total pages is 7 or less, show all page numbers
+                [...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => setCurrentPage(index + 1)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors duration-300
+                      ${
+                        currentPage === index + 1
+                          ? "bg-primary text-white"
+                          : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                      } shadow-sm`}
+                  >
+                    {index + 1}
+                  </button>
+                ))
+              ) : (
+                // If more than 7 pages, show ellipsis
+                <>
+                  {[1, 2, 3].map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors duration-300
+                        ${
+                          currentPage === pageNumber
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        } shadow-sm`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+                  <span className="px-2 text-gray-500 dark:text-gray-400">
+                    ...
+                  </span>
+                  {[totalPages - 2, totalPages - 1, totalPages].map(
+                    (pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors duration-300
+                        ${
+                          currentPage === pageNumber
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        } shadow-sm`}
+                      >
+                        {pageNumber}
+                      </button>
+                    )
+                  )}
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300
+                ${
+                  currentPage === totalPages
+                    ? "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                } shadow-sm`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
