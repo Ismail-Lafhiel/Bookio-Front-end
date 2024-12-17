@@ -1,7 +1,7 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Navbar from "./Navbar";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import BaseLayout from "./BaseLayout";
 
 const GuestLayout = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,13 +19,9 @@ const GuestLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Outlet />
-      </div>
-    </div>
+    <BaseLayout>
+      <Outlet />
+    </BaseLayout>
   );
 };
 

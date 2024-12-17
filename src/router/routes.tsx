@@ -3,6 +3,7 @@ import { lazy } from "react";
 import MainLayout from "../layouts/MainLayout";
 import GuestLayout from "../layouts/GuestLayout";
 import AuthLayout from "../layouts/AuthLayout";
+import ResetPassword from "../components/auth/ResetPassword";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("../components/Home"));
@@ -56,6 +57,10 @@ export const guestRoutes: RouteObject[] = [
         path: "forgot-password",
         element: <ForgotPassword />,
       },
+      {
+        path: "/reset-password",
+        element: <ResetPassword />,
+      },
     ],
   },
 ];
@@ -82,7 +87,7 @@ export const protectedRoutes: RouteObject[] = [
 ];
 
 export const routes: RouteObject[] = [
-    ...publicRoutes,
-    ...guestRoutes,
-    ...protectedRoutes
-  ];
+  ...publicRoutes,
+  ...guestRoutes,
+  ...protectedRoutes,
+];
