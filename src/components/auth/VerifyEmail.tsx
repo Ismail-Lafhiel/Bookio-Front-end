@@ -64,7 +64,6 @@ export default function VerifyEmail() {
       if (isSignUpComplete) {
         toast.success("Email verified successfully!");
 
-        // If we have the password, attempt automatic login
         if (password) {
           try {
             await login(email, password);
@@ -72,7 +71,6 @@ export default function VerifyEmail() {
             return;
           } catch (loginErr) {
             console.error("Auto-login failed:", loginErr);
-            // Continue to login page if auto-login fails
           }
         }
 
@@ -94,7 +92,7 @@ export default function VerifyEmail() {
     try {
       await resendSignUpCode({ username: email });
       toast.success("Verification code resent successfully!");
-      setResendCountdown(60); // Start 60 second countdown
+      setResendCountdown(60);
       setError("");
     } catch (err: any) {
       console.error("Error resending code:", err);
@@ -109,19 +107,21 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           Verify your email
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
           We sent a verification code to{" "}
-          <span className="font-medium text-indigo-600">{email}</span>
+          <span className="font-medium text-indigo-600 dark:text-indigo-400">
+            {email}
+          </span>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <FormInput
               label="Verification code"
@@ -137,6 +137,8 @@ export default function VerifyEmail() {
               }}
               error={error}
               placeholder="Enter verification code"
+              className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              labelClassName="dark:text-gray-200"
             />
 
             <div>
@@ -156,9 +158,9 @@ export default function VerifyEmail() {
                 type="button"
                 onClick={handleResendCode}
                 disabled={resendCountdown > 0 || loading}
-                className={`font-medium text-indigo-600 hover:text-indigo-500 ${
+                className={`font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 ${
                   (resendCountdown > 0 || loading) &&
-                  "opacity-50 cursor-not-allowed"
+                  "opacity-50 cursor-not-allowed dark:opacity-40"
                 }`}
               >
                 {resendCountdown > 0
@@ -171,10 +173,10 @@ export default function VerifyEmail() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-gray-300 dark:border-gray-600" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                   Wrong email address?
                 </span>
               </div>
@@ -183,7 +185,7 @@ export default function VerifyEmail() {
             <div className="mt-6 text-center">
               <Link
                 to="/register"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 Start registration again
               </Link>
