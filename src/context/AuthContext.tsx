@@ -15,6 +15,9 @@ import {
   confirmResetPassword,
   updateUserAttributes,
 } from "aws-amplify/auth";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
+import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";
 
 interface User {
   email: string;
@@ -59,6 +62,8 @@ interface AuthContextType {
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<void>;
+  uploadProfilePicture: (file: File) => Promise<string>;
+  uploadBackgroundPicture: (file: File) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,15 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
 
       const updateAttributes: Record<string, string> = {};
-
-      // Handle each field type appropriately
-      if (data.profile_pic !== undefined) {
-        updateAttributes["custom:profile_pic"] = data.profile_pic || "";
-      }
-
-      if (data.background_pic !== undefined) {
-        updateAttributes["custom:background_pic"] = data.background_pic || "";
-      }
 
       if (data.bio !== undefined) {
         updateAttributes["custom:bio"] = data.bio || "";
@@ -112,7 +108,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   };
-
   const checkAuth = async () => {
     try {
       const currentUser = await getCurrentUser();
@@ -164,6 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       setError(null);
+
       await signUp({
         username: data.email,
         password: data.password,
@@ -174,13 +170,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             family_name: data.lastName,
             preferred_username: data.preferredUsername,
             birthdate: data.birthdate,
-            updated_at: String(Math.floor(Date.now() / 1000)),
           },
-          autoSignIn: true,
         },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await signOut();
+      setUser(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Logout failed");
       throw err;
     } finally {
       setIsLoading(false);
@@ -193,7 +201,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       await resetPassword({ username: email });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Password reset failed");
+      setError(
+        err instanceof Error ? err.message : "Password reset request failed"
+      );
       throw err;
     } finally {
       setIsLoading(false);
@@ -211,7 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await confirmResetPassword({
         username: email,
         confirmationCode: code,
-        newPassword: newPassword,
+        newPassword,
       });
     } catch (err) {
       setError(
@@ -225,13 +235,156 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = async () => {
+  // Create S3 client with Cognito Identity Pool credentials
+  const createS3Client = () => {
+    return new S3Client({
+      region: import.meta.env.VITE_AWS_REGION,
+      credentials: fromCognitoIdentityPool({
+        client: new CognitoIdentityClient({
+          region: import.meta.env.VITE_AWS_REGION,
+        }),
+        identityPoolId: import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID!,
+      }),
+    });
+  };
+
+  // Utility to generate unique filename
+  const generateUniqueFileName = (file: File, folder: string) => {
+    const fileExtension = file.name.split(".").pop();
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    return `${folder}/${timestamp}_${randomString}.${fileExtension}`;
+  };
+
+  // Upload method for profile picture
+  const uploadProfilePicture = async (file: File) => {
     try {
+      // Validate environment variables
+      if (
+        !import.meta.env.VITE_AWS_REGION ||
+        !import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID ||
+        !import.meta.env.VITE_S3_BUCKET
+      ) {
+        throw new Error("Missing required environment variables");
+      }
+
       setIsLoading(true);
-      await signOut();
-      setUser(null);
+      setError(null);
+
+      // Generate unique filename
+      const fileName = generateUniqueFileName(file, "profile-pics");
+
+      console.log("Starting profile picture upload:", {
+        bucket: import.meta.env.VITE_S3_BUCKET,
+        region: import.meta.env.VITE_AWS_REGION,
+        fileName,
+        contentType: file.type,
+      });
+
+      // Create S3 client
+      const s3Client = createS3Client();
+
+      // Create upload command
+      const uploadCommand = new PutObjectCommand({
+        Bucket: import.meta.env.VITE_S3_BUCKET,
+        Key: fileName,
+        Body: file,
+        ContentType: file.type,
+      });
+
+      // Attempt the upload
+      const uploadResult = await s3Client.send(uploadCommand);
+      console.log("Profile picture upload successful:", uploadResult);
+
+      // Construct file URL
+      const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${
+        import.meta.env.VITE_AWS_REGION
+      }.amazonaws.com/${fileName}`;
+
+      // Update user attributes with the S3 key
+      await updateUserAttributes({
+        userAttributes: {
+          "custom:profile_pic": fileUrl,
+        },
+      });
+
+      // Refresh user data
+      await checkAuth();
+
+      return fileUrl;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Logout failed");
+      console.error("Profile picture upload error:", err);
+      setError(
+        err instanceof Error ? err.message : "Profile picture upload failed"
+      );
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Similar method for background picture
+  const uploadBackgroundPicture = async (file: File) => {
+    try {
+      // Validate environment variables
+      if (
+        !import.meta.env.VITE_AWS_REGION ||
+        !import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID ||
+        !import.meta.env.VITE_S3_BUCKET
+      ) {
+        throw new Error("Missing required environment variables");
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      // Generate unique filename
+      const fileName = generateUniqueFileName(file, "background-pics");
+
+      console.log("Starting background picture upload:", {
+        bucket: import.meta.env.VITE_S3_BUCKET,
+        region: import.meta.env.VITE_AWS_REGION,
+        fileName,
+        contentType: file.type,
+      });
+
+      // Create S3 client
+      const s3Client = createS3Client();
+
+      // Create upload command
+      const uploadCommand = new PutObjectCommand({
+        Bucket: import.meta.env.VITE_S3_BUCKET,
+        Key: fileName,
+        Body: file,
+        ContentType: file.type,
+      });
+
+      // Attempt the upload
+      const uploadResult = await s3Client.send(uploadCommand);
+      console.log("Background picture upload successful:", uploadResult);
+
+      // Construct file URL
+      const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${
+        import.meta.env.VITE_AWS_REGION
+      }.amazonaws.com/${fileName}`;
+
+      // Update user attributes with the S3 key
+      await updateUserAttributes({
+        userAttributes: {
+          "custom:background_pic": fileUrl,
+        },
+      });
+
+      // Refresh user data
+      await checkAuth();
+
+      return fileUrl;
+    } catch (err) {
+      console.error("Background picture upload error:", err);
+      setError(
+        err instanceof Error ? err.message : "Background picture upload failed"
+      );
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -250,6 +403,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         forgotPassword,
         confirmForgotPassword,
         updateUserProfile,
+        uploadProfilePicture,
+        uploadBackgroundPicture,
       }}
     >
       {children}
@@ -264,3 +419,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;
