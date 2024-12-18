@@ -7,7 +7,8 @@ import ResetPassword from "../components/auth/ResetPassword";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("../components/Home"));
-const Books = lazy(() => import("../components/Books"));
+const Books = lazy(() => import("../components/Books/Books"));
+const Authors = lazy(() => import("../components/Authors/Authors"));
 const NotFound = lazy(() => import("../components/NotFound"));
 const Login = lazy(() => import("../components/auth/Login"));
 const Register = lazy(() => import("../components/auth/Register"));
@@ -27,6 +28,10 @@ export const publicRoutes: RouteObject[] = [
       {
         path: "/books",
         element: <Books />,
+      },
+      {
+        path: "/authors",
+        element: <Authors />,
       },
       {
         path: "*",

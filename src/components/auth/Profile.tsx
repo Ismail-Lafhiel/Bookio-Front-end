@@ -11,7 +11,6 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
-
 interface FormData {
   bio: string;
   profile_pic?: string | null;
@@ -197,7 +196,7 @@ const Profile: React.FC = () => {
           className="absolute inset-0 bg-cover bg-center transition-all duration-300 rounded-b-[1.5rem]"
           style={{
             backgroundImage: `url(${
-              formData.background_pic || "/background_placeholder.jpg"
+              formData.background_pic || "/backgound_placeholder.jpg"
             })`,
             backgroundPosition: "center",
             backgroundSize: "cover",
