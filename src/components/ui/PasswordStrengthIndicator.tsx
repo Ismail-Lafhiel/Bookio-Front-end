@@ -1,3 +1,4 @@
+//@ts-ignore
 import PasswordStrengthIndicatorProps from "../../interfaces/PasswordStrengthIndicatorProps";
 
 export const PasswordStrengthIndicator = ({

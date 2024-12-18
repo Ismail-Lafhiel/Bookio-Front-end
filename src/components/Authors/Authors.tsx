@@ -1,23 +1,24 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { FaTwitter, FaLinkedinIn, FaGlobe, FaBook } from "react-icons/fa";
+import AuthorsData from "../../data/authors";
+
+interface Author {
+  name: string;
+  role: string;
+  image: string;
+  books: number;
+  followers: string;
+  bio: string;
+  social: {
+    twitter: string;
+    linkedin: string;
+    website: string;
+  };
+}
 
 const Authors = () => {
-  const authors = [
-    {
-      name: "Sarah Johnson",
-      role: "Fiction Writer",
-      image: "/authors/author1.jpg",
-      books: 12,
-      followers: "45K",
-      bio: "Bestselling author of contemporary fiction with over a decade of storytelling experience.",
-      social: {
-        twitter: "#",
-        linkedin: "#",
-        website: "#",
-      },
-    },
-    // Add more authors as needed
-  ];
+  const [authors, setAuthors] = useState<Author[]>(AuthorsData);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -72,14 +73,30 @@ const Authors = () => {
                 transition={{ delay: index * 0.1 }}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
               >
-                <div className="relative h-48 overflow-hidden">
-                  <img
+                <motion.div
+                  className="relative h-48 overflow-hidden"
+                  initial="initial"
+                  whileInView="animate"
+                  viewport={{ once: true }}
+                  variants={fadeInUp}
+                >
+                  <motion.img
+                    initial={{ scale: 1.2, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7 }}
                     src={author.image}
                     alt={author.name}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
+                  />
+                </motion.div>
 
                 <div className="p-6">
                   <div className="flex items-start justify-between">
