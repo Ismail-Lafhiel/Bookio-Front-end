@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { FaSearch, FaStar } from "react-icons/fa";
 import BooksData from "../../data/books";
+import { Link } from "react-router-dom";
 
 interface Book {
   id: string;
@@ -159,11 +160,13 @@ const Books = () => {
           transition-all duration-300"
               >
                 <div className="relative h-[280px] group overflow-hidden rounded-t-lg">
-                  <img
-                    src={book.cover}
-                    alt={book.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  <Link to={`/book/${encodeURIComponent(book.title)}`}>
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </Link>
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                     <h3 className="text-lg font-semibold text-white mb-1">
                       {book.title}
@@ -197,12 +200,13 @@ const Books = () => {
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       Published {book.publishDate}
                     </span>
-                    <button
+                    <Link
+                      to={`/book/${encodeURIComponent(book.title)}`}
                       className="px-3 py-1 bg-primary text-white text-sm rounded 
                hover:bg-primary-dark transition-colors duration-300"
                     >
                       Read More
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
