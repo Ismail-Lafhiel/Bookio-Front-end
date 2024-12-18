@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { FaTwitter, FaLinkedinIn, FaGlobe, FaBook } from "react-icons/fa";
+import {FaLinkedinIn, FaGlobe, FaBook } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import AuthorsData from "../../data/authors";
 import { Link } from "react-router-dom";
 
@@ -113,7 +114,7 @@ const Authors = () => {
                         className="text-gray-600 hover:text-primary dark:text-gray-400"
                         href={author.social.twitter}
                       >
-                        <FaTwitter className="w-4 h-4" />
+                        <FaXTwitter className="w-4 h-4" />
                       </motion.a>
                       <motion.a
                         whileHover={{ y: -2 }}

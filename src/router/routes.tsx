@@ -3,7 +3,7 @@ import { lazy } from "react";
 import MainLayout from "../layouts/MainLayout";
 import GuestLayout from "../layouts/GuestLayout";
 import AuthLayout from "../layouts/AuthLayout";
-import ResetPassword from "../components/auth/ResetPassword";
+import ResetPassword from "../components/Auth/ResetPassword";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("../components/Home/Home"));
@@ -12,11 +12,11 @@ const Book = lazy(() => import("../components/Book/Book"));
 const Authors = lazy(() => import("../components/Authors/Authors"));
 const Author = lazy(() => import("../components/Author/Author"));
 const NotFound = lazy(() => import("../components/NotFound"));
-const Login = lazy(() => import("../components/auth/Login"));
-const Register = lazy(() => import("../components/auth/Register"));
-const ForgotPassword = lazy(() => import("../components/auth/ForgotPassword"));
-const Profile = lazy(() => import("../components/auth/Profile"));
-const VerifyEmail = lazy(() => import("../components/auth/VerifyEmail"));
+const Login = lazy(() => import("../components/Auth/Login"));
+const Register = lazy(() => import("../components/Auth/Register"));
+const ForgotPassword = lazy(() => import("../components/Auth/ForgotPassword"));
+const Profile = lazy(() => import("../components/Auth/Profile"));
+const VerifyEmail = lazy(() => import("../components/Auth/VerifyEmail"));
 
 export const publicRoutes: RouteObject[] = [
   {
