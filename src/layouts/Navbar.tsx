@@ -137,13 +137,13 @@ export default function Navbar() {
                     <div className="space-x-4">
                       <Link
                         to="/login"
-                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-full text-sm font-medium"
                       >
                         Login
                       </Link>
                       <Link
                         to="/register"
-                        className="bg-primary text-white hover:bg-primary px-3 py-2 rounded-md text-sm font-medium"
+                        className="bg-primary text-white hover:bg-primary px-3 py-2 rounded-full text-sm font-medium"
                       >
                         Sign up
                       </Link>

@@ -6,7 +6,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import ResetPassword from "../components/auth/ResetPassword";
 
 // Lazy load components for better performance
-const Home = lazy(() => import("../components/Home"));
+const Home = lazy(() => import("../components/Home/Home"));
 const Books = lazy(() => import("../components/Books/Books"));
 const Authors = lazy(() => import("../components/Authors/Authors"));
 const NotFound = lazy(() => import("../components/NotFound"));
