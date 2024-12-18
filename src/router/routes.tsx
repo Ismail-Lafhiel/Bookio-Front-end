@@ -10,6 +10,7 @@ const Home = lazy(() => import("../components/Home/Home"));
 const Books = lazy(() => import("../components/Books/Books"));
 const Book = lazy(() => import("../components/Book/Book"));
 const Authors = lazy(() => import("../components/Authors/Authors"));
+const Author = lazy(() => import("../components/Author/Author"));
 const NotFound = lazy(() => import("../components/NotFound"));
 const Login = lazy(() => import("../components/auth/Login"));
 const Register = lazy(() => import("../components/auth/Register"));
@@ -31,12 +32,16 @@ export const publicRoutes: RouteObject[] = [
         element: <Books />,
       },
       {
-        path: "/book/:title",
+        path: "/books/:title",
         element: <Book />,
       },
       {
         path: "/authors",
         element: <Authors />,
+      },
+      {
+        path: "/authors/:name",
+        element: <Author />,
       },
       {
         path: "*",

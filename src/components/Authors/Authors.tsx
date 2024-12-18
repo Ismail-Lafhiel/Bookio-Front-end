@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { FaTwitter, FaLinkedinIn, FaGlobe, FaBook } from "react-icons/fa";
 import AuthorsData from "../../data/authors";
+import { Link } from "react-router-dom";
 
 interface Author {
   name: string;
@@ -67,36 +68,34 @@ const Authors = () => {
             {authors.map((author, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+                whileHover={{ y: -5 }}
+                className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden
+                shadow-[0_2px_8px_rgba(0,0,0,0.1)]
+                hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]
+                transition-all duration-300"
               >
-                <motion.div
-                  className="relative h-48 overflow-hidden"
-                  initial="initial"
-                  whileInView="animate"
-                  viewport={{ once: true }}
-                  variants={fadeInUp}
-                >
-                  <motion.img
-                    initial={{ scale: 1.2, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7 }}
-                    src={author.image}
-                    alt={author.name}
-                    className="w-full h-full object-cover"
-                  />
+                <Link to={`/authors/${encodeURIComponent(author.name)}`}>
                   <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
+                    className="relative h-[280px] group overflow-hidden rounded-t-lg"
+                    initial="initial"
+                    whileInView="animate"
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
-                  />
-                </motion.div>
+                    variants={fadeInUp}
+                  >
+                    <img
+                      src={author.image}
+                      alt={author.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.3 }}
+                      className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
+                    />
+                  </motion.div>
+                </Link>
 
                 <div className="p-6">
                   <div className="flex items-start justify-between">
@@ -154,7 +153,9 @@ const Authors = () => {
                     whileTap={{ scale: 0.98 }}
                     className="mt-6 w-full bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                   >
-                    View Profile
+                    <Link to={`/authors/${encodeURIComponent(author.name)}`}>
+                      View Profile
+                    </Link>
                   </motion.button>
                 </div>
               </motion.div>

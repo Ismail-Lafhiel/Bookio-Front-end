@@ -155,12 +155,12 @@ const Books = () => {
               <motion.div
                 whileHover={{ y: -5 }}
                 className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden
-          shadow-[0_2px_8px_rgba(0,0,0,0.1)]
-          hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]
-          transition-all duration-300"
+                shadow-[0_2px_8px_rgba(0,0,0,0.1)]
+                hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]
+                transition-all duration-300"
               >
                 <div className="relative h-[280px] group overflow-hidden rounded-t-lg">
-                  <Link to={`/book/${encodeURIComponent(book.title)}`}>
+                  <Link to={`/books/${encodeURIComponent(book.title)}`}>
                     <img
                       src={book.cover}
                       alt={book.title}
@@ -201,7 +201,7 @@ const Books = () => {
                       Published {book.publishDate}
                     </span>
                     <Link
-                      to={`/book/${encodeURIComponent(book.title)}`}
+                      to={`/books/${encodeURIComponent(book.title)}`}
                       className="px-3 py-1 bg-primary text-white text-sm rounded 
                hover:bg-primary-dark transition-colors duration-300"
                     >
