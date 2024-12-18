@@ -10,6 +10,7 @@ const BooksData = [
     category: "Classic",
     publishDate: "2023",
     pages: 324,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "2",
@@ -22,6 +23,7 @@ const BooksData = [
     category: "Science",
     publishDate: "2021",
     pages: 688,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "3",
@@ -34,6 +36,7 @@ const BooksData = [
     category: "Classic",
     publishDate: "2020",
     pages: 432,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "4",
@@ -46,6 +49,7 @@ const BooksData = [
     category: "Biography",
     publishDate: "2022",
     pages: 560,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "5",
@@ -58,6 +62,7 @@ const BooksData = [
     category: "Science",
     publishDate: "2021",
     pages: 496,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "6",
@@ -70,6 +75,7 @@ const BooksData = [
     category: "Classic",
     publishDate: "2022",
     pages: 336,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "7",
@@ -82,6 +88,7 @@ const BooksData = [
     category: "Biography",
     publishDate: "2021",
     pages: 536,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "8",
@@ -94,6 +101,7 @@ const BooksData = [
     category: "Science",
     publishDate: "2021",
     pages: 244,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "9",
@@ -106,6 +114,7 @@ const BooksData = [
     category: "Biography",
     publishDate: "2022",
     pages: 656,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "10",
@@ -118,6 +127,7 @@ const BooksData = [
     category: "Classic",
     publishDate: "2021",
     pages: 328,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "11",
@@ -130,6 +140,7 @@ const BooksData = [
     category: "Science",
     publishDate: "2023",
     pages: 212,
+    pdfUrl: "/book-1.pdf",
   },
   {
     id: "12",
@@ -142,6 +153,7 @@ const BooksData = [
     category: "Biography",
     publishDate: "2023",
     pages: 283,
+    pdfUrl: "/book-1.pdf",
   },
 ];
 
