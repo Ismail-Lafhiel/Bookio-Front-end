@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { LoadingSpinner } from "../components/UI/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 import BaseLayout from "./BaseLayout";
 

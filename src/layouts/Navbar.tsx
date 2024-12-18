@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
-import DarkModeToggle from "../components/ui/DarkModeToggle";
+import DarkModeToggle from "../components/UI/DarkModeToggle";
 import { FaBookOpen } from "react-icons/fa";
 
 const navigation = [
@@ -43,7 +43,7 @@ export default function Navbar() {
   }
 
   return (
-    <Disclosure as="nav" className="bg-gray-100 dark:bg-gray-900">
+    <Disclosure as="nav" className="bg-gray-100 dark:bg-gray-800">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

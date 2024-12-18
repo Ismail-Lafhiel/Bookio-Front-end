@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { FaSearch, FaStar } from "react-icons/fa";
-import BooksData from "../../data/book";
+import BooksData from "../../data/books";
 
 interface Book {
   id: string;

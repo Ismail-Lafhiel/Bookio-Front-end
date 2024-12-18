@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
-import { FormInput } from "../ui/FormInput";
-import { Button } from "../ui/Button";
+import { FormInput } from "../UI/FormInput";
+import { Button } from "../UI/Button";
 
 interface ForgotPasswordForm {
   email: string;

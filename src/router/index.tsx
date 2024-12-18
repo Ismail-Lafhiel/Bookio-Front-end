@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { LoadingSpinner } from '../components/UI/LoadingSpinner';
 import { routes } from './routes';
 
 const router = createBrowserRouter(routes);

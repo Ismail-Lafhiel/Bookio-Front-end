@@ -8,8 +8,8 @@ import {
   IdentificationIcon,
 } from "@heroicons/react/24/outline";
 import { signUp } from "aws-amplify/auth";
-import { Button } from "../ui/Button";
-import { FormInput } from "../ui/FormInput";
+import { Button } from "../UI/Button";
+import { FormInput } from "../UI/FormInput";
 
 import toast from "react-hot-toast";
 import RegisterForm from "../../interfaces/registerForm";

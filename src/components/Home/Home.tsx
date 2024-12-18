@@ -214,7 +214,7 @@ const Home = () => {
       </div>
 
       {/* Popular Categories */}
-      <div className="py-16 bg-white dark:bg-gray-800">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
             initial="initial"
@@ -259,7 +259,7 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-gray-50 dark:bg-gray-900">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
             initial="initial"
@@ -308,7 +308,7 @@ const Home = () => {
       </div>
 
       {/* Featured Books Carousel */}
-      <div className="py-16 bg-white dark:bg-gray-800">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
             initial="initial"
@@ -363,13 +363,13 @@ const Home = () => {
       </div>
 
       {/* Testimonial Section */}
-      <div className="py-16 bg-gray-50 dark:bg-gray-900">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 text-center relative overflow-hidden shadow-lg"
+            className="bg-white dark:bg-gray-900 rounded-2xl p-6 md:p-8 text-center relative overflow-hidden shadow-lg"
           >
             <FaQuoteLeft className="text-4xl text-primary/20 absolute top-3 left-3" />
             <div className="relative z-10">
@@ -386,7 +386,7 @@ const Home = () => {
                 </p>
                 <div className="flex items-center justify-center">
                   <img
-                    src="/avatar.jpg"
+                    src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.OfDQ8AIZnefTuJhludVucAHaJ8%26pid%3DApi&f=1&ipt=d7580a2f76ca543e7f21f049ae7f40f0c64bd29238440812c2cf51800d68c5d5&ipo=images"
                     alt="User"
                     className="w-10 h-10 rounded-full"
                   />
@@ -406,7 +406,7 @@ const Home = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="py-16 bg-white dark:bg-gray-800">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
