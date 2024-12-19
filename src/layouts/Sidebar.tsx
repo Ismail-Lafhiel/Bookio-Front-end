@@ -12,6 +12,40 @@ import {
   HiOutlineLogout,
 } from "react-icons/hi";
 
+interface SidebarItemProps {
+  href: string;
+  icon?: ReactNode;
+  children: ReactNode;
+  end?: boolean;
+}
+
+const SidebarItem = ({ href, icon, children, end }: SidebarItemProps) => {
+  return (
+    <NavLink to={href} end={end}>
+      {({ isActive }) => (
+        <div
+          className={`flex items-center space-x-3 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            isActive
+              ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary"
+              : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          }`}
+        >
+          {icon && (
+            <span
+              className={`flex-shrink-0 ${
+                isActive ? "text-primary dark:text-primary" : ""
+              }`}
+            >
+              {icon}
+            </span>
+          )}
+          <span>{children}</span>
+        </div>
+      )}
+    </NavLink>
+  );
+};
+
 const Sidebar = () => {
   const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -41,6 +75,7 @@ const Sidebar = () => {
           label: "Dashboard",
           icon: <HiOutlineHome className="w-6 h-6" />,
           href: "/dashboard",
+          end: true,
         },
         {
           label: "Books",
@@ -85,7 +120,7 @@ const Sidebar = () => {
   if (isLoading) {
     return (
       <div className="h-full bg-white dark:bg-gray-800 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -129,7 +164,12 @@ const Sidebar = () => {
               {group.title}
             </h3>
             {group.items.map((item, itemIdx) => (
-              <SidebarItem key={itemIdx} href={item.href} icon={item.icon}>
+              <SidebarItem
+                key={itemIdx}
+                href={item.href}
+                icon={item.icon}
+                end={item.end}
+              >
                 {item.label}
               </SidebarItem>
             ))}
@@ -148,30 +188,6 @@ const Sidebar = () => {
         </button>
       </div>
     </div>
-  );
-};
-
-interface SidebarItemProps {
-  href: string;
-  icon?: ReactNode;
-  children: ReactNode;
-}
-
-const SidebarItem = ({ href, icon, children }: SidebarItemProps) => {
-  return (
-    <NavLink
-      to={href}
-      className={({ isActive }) =>
-        `flex items-center space-x-3 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-          isActive
-            ? "bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-500"
-            : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-        }`
-      }
-    >
-      {icon}
-      <span>{children}</span>
-    </NavLink>
   );
 };
 

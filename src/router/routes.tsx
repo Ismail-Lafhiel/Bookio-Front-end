@@ -19,7 +19,7 @@ const VerifyEmail = lazy(() => import("../components/Auth/VerifyEmail"));
 
 //dashboard components
 const Dashboard = lazy(() => import("../components/Dashboard/Dashboard"));
-// const DashboardBooks = lazy(() => import("../components/Dashboard/Books"));
+const DashboardBooks = lazy(() => import("../components/Dashboard/Books/DashboardBooks"));
 // const DashboardAuthors = lazy(() => import("../components/Dashboard/Authors"));
 // const DashboardUsers = lazy(() => import("../components/Dashboard/Users"));
 // const DashboardSettings = lazy(
@@ -107,23 +107,23 @@ export const protectedRoutes: RouteObject[] = [
         index: true,
         element: <Dashboard />,
       },
-      // {
-      //   path: "books",
-      //   children: [
-      //     {
-      //       index: true,
-      //       element: <DashboardBooks />,
-      //     },
-      //     {
-      //       path: "create",
-      //       element: <DashboardBooks />,
-      //     },
-      //     {
-      //       path: "edit/:id",
-      //       element: <DashboardBooks />,
-      //     },
-      //   ],
-      // },
+      {
+        path: "books",
+        children: [
+          {
+            index: true,
+            element: <DashboardBooks />,
+          },
+          // {
+          //   path: "create",
+          //   element: <DashboardBooks />,
+          // },
+          // {
+          //   path: "edit/:id",
+          //   element: <DashboardBooks />,
+          // },
+        ],
+      },
       // {
       //   path: "authors",
       //   children: [
