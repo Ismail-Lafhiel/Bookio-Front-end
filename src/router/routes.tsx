@@ -1,9 +1,7 @@
 import { RouteObject } from "react-router-dom";
 import { lazy } from "react";
-import MainLayout from "../layouts/MainLayout";
-import GuestLayout from "../layouts/GuestLayout";
-import AuthLayout from "../layouts/AuthLayout";
-import ResetPassword from "../components/Auth/ResetPassword";
+
+import {MainLayout, GuestLayout, AuthLayout, DashboardLayout} from '../layouts'
 
 // Lazy load components for better performance
 const Home = lazy(() => import("../components/Home/Home"));
@@ -15,8 +13,18 @@ const NotFound = lazy(() => import("../components/NotFound"));
 const Login = lazy(() => import("../components/Auth/Login"));
 const Register = lazy(() => import("../components/Auth/Register"));
 const ForgotPassword = lazy(() => import("../components/Auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("../components/Auth/ResetPassword"));
 const Profile = lazy(() => import("../components/Auth/Profile"));
 const VerifyEmail = lazy(() => import("../components/Auth/VerifyEmail"));
+
+//dashboard components
+const Dashboard = lazy(() => import("../components/Dashboard/Dashboard"));
+// const DashboardBooks = lazy(() => import("../components/Dashboard/Books"));
+// const DashboardAuthors = lazy(() => import("../components/Dashboard/Authors"));
+// const DashboardUsers = lazy(() => import("../components/Dashboard/Users"));
+// const DashboardSettings = lazy(
+//   () => import("../components/Dashboard/Settings")
+// );
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -89,14 +97,71 @@ export const protectedRoutes: RouteObject[] = [
         path: "profile",
         element: <Profile />,
       },
+    ],
+  },
+  {
+    path: "/dashboard",
+    element: <DashboardLayout />,
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
       // {
-      //   path: 'settings',
-      //   element: <Settings />
+      //   path: "books",
+      //   children: [
+      //     {
+      //       index: true,
+      //       element: <DashboardBooks />,
+      //     },
+      //     {
+      //       path: "create",
+      //       element: <DashboardBooks />,
+      //     },
+      //     {
+      //       path: "edit/:id",
+      //       element: <DashboardBooks />,
+      //     },
+      //   ],
       // },
       // {
-      //   path: 'dashboard',
-      //   element: <Dashboard />
-      // }
+      //   path: "authors",
+      //   children: [
+      //     {
+      //       index: true,
+      //       element: <DashboardAuthors />,
+      //     },
+      //     {
+      //       path: "create",
+      //       element: <DashboardAuthors />,
+      //     },
+      //     {
+      //       path: "edit/:id",
+      //       element: <DashboardAuthors />,
+      //     },
+      //   ],
+      // },
+      // {
+      //   path: "users",
+      //   children: [
+      //     {
+      //       index: true,
+      //       element: <DashboardUsers />,
+      //     },
+      //     {
+      //       path: "create",
+      //       element: <DashboardUsers />,
+      //     },
+      //     {
+      //       path: "edit/:id",
+      //       element: <DashboardUsers />,
+      //     },
+      //   ],
+      // },
+      // {
+      //   path: "settings",
+      //   element: <DashboardSettings />,
+      // },
     ],
   },
 ];
