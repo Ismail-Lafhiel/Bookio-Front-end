@@ -138,7 +138,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               : isValid
               ? "text-green-600"
               : isFocused
-              ? "text-indigo-600 dark:text-indigo-400"
+              ? "text-primary dark:text-primary"
               : "text-gray-700 dark:text-gray-200",
             labelClassName
           )}
@@ -161,7 +161,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                 : isValid
                 ? "ring-green-500"
                 : isFocused
-                ? "ring-indigo-500"
+                ? "ring-primary"
                 : ""
             )}
           >
@@ -175,7 +175,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                       : isValid
                       ? "text-green-500 dark:text-green-400"
                       : isFocused
-                      ? "text-indigo-500 dark:text-indigo-400"
+                      ? "text-primary dark:text-primary"
                       : "text-gray-400 dark:text-gray-500"
                   )}
                   aria-hidden="true"
@@ -200,7 +200,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                   : isValid
                   ? "border-green-400 text-green-900 placeholder-green-400 dark:border-green-600 dark:placeholder-green-600"
                   : "border-gray-400 text-gray-900 placeholder-gray-400 dark:border-gray-600 dark:placeholder-gray-600",
-                isFocused && !error && !isValid && "border-indigo-500",
+                isFocused && !error && !isValid && "border-primary",
                 "disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200",
                 textArea && "resize-none",
                 className

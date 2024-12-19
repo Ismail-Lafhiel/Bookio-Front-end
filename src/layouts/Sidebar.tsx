@@ -160,7 +160,7 @@ const Sidebar = () => {
       <nav className="p-4 space-y-8">
         {menuItems.map((group, idx) => (
           <div key={idx} className="space-y-2">
-            <h3 className="px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <h3 className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               {group.title}
             </h3>
             {group.items.map((item, itemIdx) => (

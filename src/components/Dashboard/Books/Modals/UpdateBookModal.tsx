@@ -3,6 +3,21 @@ import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { HiX } from "react-icons/hi";
 import { BookFormData } from "./CreateBookModal";
+import { FormInput } from "../../../UI/FormInput";
+import {
+  BookOpenIcon,
+  UserIcon,
+  IdentificationIcon,
+  TagIcon,
+  DocumentTextIcon,
+  CalendarIcon,
+  CalculatorIcon,
+} from "@heroicons/react/24/outline";
+import FormSelect from "../../../UI/FormSelect";
+
+interface FormErrors {
+  [key: string]: string | undefined;
+}
 
 interface UpdateBookModalProps {
   isOpen: boolean;
@@ -27,11 +42,25 @@ const UpdateBookModal = ({
     quantity: 1,
   });
 
+  const [errors, setErrors] = useState<Partial<BookFormData>>({});
+
   useEffect(() => {
     if (bookData) {
       setFormData(bookData);
     }
   }, [bookData]);
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +70,7 @@ const UpdateBookModal = ({
 
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -69,7 +98,7 @@ const UpdateBookModal = ({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                    className="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -87,179 +116,131 @@ const UpdateBookModal = ({
                     </Dialog.Title>
                     <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                       <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-                        <div>
-                          <label
-                            htmlFor="title"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Title
-                          </label>
-                          <input
-                            type="text"
-                            name="title"
-                            id="title"
-                            required
-                            value={formData.title}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                title: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                          />
-                        </div>
+                        <FormInput
+                          label="Title"
+                          placeholder="Enter book title"
+                          id="title"
+                          name="title"
+                          type="text"
+                          required
+                          value={formData.title}
+                          onChange={handleChange}
+                          error={errors.title}
+                          icon={BookOpenIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
 
-                        <div>
-                          <label
-                            htmlFor="author"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Author
-                          </label>
-                          <input
-                            type="text"
-                            name="author"
-                            id="author"
-                            required
-                            value={formData.author}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                author: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                          />
-                        </div>
+                        <FormInput
+                          label="Author"
+                          placeholder="Enter author name"
+                          id="author"
+                          name="author"
+                          type="text"
+                          required
+                          value={formData.author}
+                          onChange={handleChange}
+                          error={errors.author}
+                          icon={UserIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
 
-                        <div>
-                          <label
-                            htmlFor="isbn"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            ISBN
-                          </label>
-                          <input
-                            type="text"
-                            name="isbn"
-                            id="isbn"
-                            required
-                            value={formData.isbn}
-                            onChange={(e) =>
-                              setFormData({ ...formData, isbn: e.target.value })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                          />
-                        </div>
+                        <FormInput
+                          label="ISBN"
+                          placeholder="Enter ISBN"
+                          id="isbn"
+                          name="isbn"
+                          type="text"
+                          required
+                          value={formData.isbn}
+                          onChange={handleChange}
+                          error={errors.isbn}
+                          icon={IdentificationIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
 
-                        <div>
-                          <label
-                            htmlFor="category"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Category
-                          </label>
-                          <select
-                            id="category"
-                            name="category"
-                            required
-                            value={formData.category}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                category: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                          >
-                            <option value="">Select a category</option>
-                            <option value="Fiction">Fiction</option>
-                            <option value="Non-Fiction">Non-Fiction</option>
-                            <option value="Science">Science</option>
-                            <option value="Technology">Technology</option>
-                          </select>
-                        </div>
+                        <FormSelect
+                          label="Category"
+                          placeholder="Select category"
+                          id="category"
+                          name="category"
+                          required
+                          value={formData.category}
+                          onChange={handleChange}
+                          error={errors.category}
+                          icon={TagIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                          options={[
+                            { value: "Fiction", label: "Fiction" },
+                            { value: "Non-Fiction", label: "Non-Fiction" },
+                            { value: "Science", label: "Science" },
+                            { value: "Technology", label: "Technology" },
+                          ]}
+                        />
 
                         <div className="sm:col-span-2">
-                          <label
-                            htmlFor="description"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Description
-                          </label>
-                          <textarea
+                          <FormInput
+                            label="Description"
+                            placeholder="Enter book description"
                             id="description"
                             name="description"
-                            rows={3}
-                            value={formData.description}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                description: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="publishedDate"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Published Date
-                          </label>
-                          <input
-                            type="date"
-                            name="publishedDate"
-                            id="publishedDate"
-                            value={formData.publishedDate}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                publishedDate: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="quantity"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Quantity
-                          </label>
-                          <input
-                            type="number"
-                            name="quantity"
-                            id="quantity"
-                            min="1"
                             required
-                            value={formData.quantity}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                quantity: parseInt(e.target.value),
-                              })
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            value={formData.description}
+                            onChange={handleChange}
+                            error={errors.description}
+                            icon={DocumentTextIcon}
+                            className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                            labelClassName="dark:text-gray-200"
+                            textArea
+                            autoGrow
                           />
                         </div>
+
+                        <FormInput
+                          label="Published Date"
+                          id="publishedDate"
+                          name="publishedDate"
+                          type="date"
+                          required
+                          value={formData.publishedDate}
+                          onChange={handleChange}
+                          error={errors.publishedDate}
+                          icon={CalendarIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
+
+                        <FormInput
+                          label="Quantity"
+                          placeholder="Enter quantity"
+                          id="quantity"
+                          name="quantity"
+                          type="number"
+                          min="1"
+                          required
+                          value={formData.quantity.toString()}
+                          onChange={handleChange}
+                          //@ts-ignore
+                          error={errors.quantity}
+                          icon={CalculatorIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
                       </div>
 
                       <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                         <button
                           type="submit"
-                          className="inline-flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                          className="inline-flex w-full justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                         >
                           Update Book
                         </button>
                         <button
                           type="button"
-                          className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                          className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
                           onClick={onClose}
                         >
                           Cancel
