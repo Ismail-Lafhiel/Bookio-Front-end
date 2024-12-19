@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   HiOutlineHome,
   HiOutlineBookOpen,
@@ -12,6 +13,25 @@ import {
 } from "react-icons/hi";
 
 const Sidebar = () => {
+  const { user, logout, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const getAvatarName = () => {
+    if (user?.given_name && user?.family_name) {
+      return `${user.given_name} ${user.family_name}`;
+    }
+    return user?.preferred_username || user?.email || "";
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   const menuItems = [
     // Main
     {
@@ -62,19 +82,39 @@ const Sidebar = () => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="h-full bg-white dark:bg-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="h-full bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
       {/* User Profile Section */}
       <div className="p-4 border-b dark:border-gray-700">
         <div className="flex items-center space-x-4">
           <img
-            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=XXXXXXXXXXXXXXXXXXXX&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+            src={
+              user?.profile_pic ||
+              `https://ui-avatars.com/api/?name=${getAvatarName()}`
+            }
             alt="Profile"
-            className="w-10 h-10 rounded-full"
+            className="w-10 h-10 rounded-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = `https://ui-avatars.com/api/?name=${getAvatarName()}`;
+            }}
           />
           <div>
-            <h2 className="text-sm font-semibold">John Doe</h2>
+            <h2 className="text-sm font-semibold">{getAvatarName()}</h2>
             <p className="text-xs text-gray-500 dark:text-gray-400">
+              {/* {user?.role || "User"} */}
               Administrator
             </p>
           </div>
@@ -100,9 +140,7 @@ const Sidebar = () => {
       {/* Logout Button */}
       <div className="p-4 border-t dark:border-gray-700">
         <button
-          onClick={() => {
-            /* Add logout handler */
-          }}
+          onClick={handleLogout}
           className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
         >
           <HiOutlineLogout className="w-5 h-5" />

@@ -25,10 +25,9 @@ const DashboardLayout = () => {
 
       <div className="flex flex-1 pt-16">
         {" "}
-        {/* Add flex-1 to ensure content fills height */}
         {/* Sidebar */}
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 pt-2 ${
+          className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -39,7 +38,6 @@ const DashboardLayout = () => {
         {/* Main Content Wrapper */}
         <div className="flex-1 flex flex-col min-w-0">
           {" "}
-          {/* Add min-w-0 to fix overflow issues */}
           {/* Main Content */}
           <main className="flex-1 p-4 md:p-6">
             <div className="mx-auto max-w-7xl space-y-6">
