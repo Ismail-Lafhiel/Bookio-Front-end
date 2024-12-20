@@ -1,7 +1,12 @@
 import { RouteObject } from "react-router-dom";
 import { lazy } from "react";
 
-import {MainLayout, GuestLayout, AuthLayout, DashboardLayout} from '../layouts'
+import {
+  MainLayout,
+  GuestLayout,
+  AuthLayout,
+  DashboardLayout,
+} from "../layouts";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("../components/Home/Home"));
@@ -19,8 +24,12 @@ const VerifyEmail = lazy(() => import("../components/Auth/VerifyEmail"));
 
 //dashboard components
 const Dashboard = lazy(() => import("../components/Dashboard/Dashboard"));
-const DashboardBooks = lazy(() => import("../components/Dashboard/Books/DashboardBooks"));
-// const DashboardAuthors = lazy(() => import("../components/Dashboard/Authors"));
+const DashboardBooks = lazy(
+  () => import("../components/Dashboard/Books/DashboardBooks")
+);
+const DashboardCategories = lazy(
+  () => import("../components/Dashboard/Categories/DashboardCategories")
+);
 // const DashboardUsers = lazy(() => import("../components/Dashboard/Users"));
 // const DashboardSettings = lazy(
 //   () => import("../components/Dashboard/Settings")
@@ -114,14 +123,15 @@ export const protectedRoutes: RouteObject[] = [
             index: true,
             element: <DashboardBooks />,
           },
-          // {
-          //   path: "create",
-          //   element: <DashboardBooks />,
-          // },
-          // {
-          //   path: "edit/:id",
-          //   element: <DashboardBooks />,
-          // },
+        ],
+      },
+      {
+        path: "categories",
+        children: [
+          {
+            index: true,
+            element: <DashboardCategories />,
+          },
         ],
       },
       // {

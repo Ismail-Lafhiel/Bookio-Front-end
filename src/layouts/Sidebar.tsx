@@ -11,6 +11,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineLogout,
 } from "react-icons/hi";
+import { MdOutlineCategory } from "react-icons/md";
 
 interface SidebarItemProps {
   href: string;
@@ -78,9 +79,9 @@ const Sidebar = () => {
           end: true,
         },
         {
-          label: "Books",
-          icon: <HiOutlineBookOpen className="w-6 h-6" />,
-          href: "/dashboard/books",
+          label: "Analytics",
+          icon: <HiOutlineChartBar className="w-6 h-6" />,
+          href: "/dashboard/analytics",
         },
         {
           label: "Users",
@@ -88,9 +89,14 @@ const Sidebar = () => {
           href: "/dashboard/users",
         },
         {
-          label: "Analytics",
-          icon: <HiOutlineChartBar className="w-6 h-6" />,
-          href: "/dashboard/analytics",
+          label: "Books",
+          icon: <HiOutlineBookOpen className="w-6 h-6" />,
+          href: "/dashboard/books",
+        },
+        {
+          label: "Categories",
+          icon: <MdOutlineCategory className="w-6 h-6" />,
+          href: "/dashboard/categories",
         },
       ],
     },
