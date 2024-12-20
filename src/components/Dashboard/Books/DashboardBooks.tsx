@@ -1,4 +1,5 @@
-import { useState } from "react";
+// DashboardBooks.tsx
+import { useState, useEffect, useMemo } from "react";
 import {
   HiOutlineSearch,
   HiOutlineFilter,
@@ -8,25 +9,15 @@ import {
   HiChevronLeft,
   HiChevronRight,
 } from "react-icons/hi";
-import CreateBookModal, { BookFormData } from "./Modals/CreateBookModal";
+import CreateBookModal from "./Modals/CreateBookModal";
 import DeleteBookModal from "./Modals/DeleteBookModal";
 import UpdateBookModal from "./Modals/UpdateBookModal";
-
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  category: string;
-  status: "Available" | "Borrowed" | "Reserved";
-  description: string;
-  publishedDate: string;
-  quantity: number;
-  borrower?: string;
-  dueDate?: string;
-}
+import { books, filterBooks, paginateBooks } from "./data/books";
+import type { Book } from "./data/books";
+import type { BookFormData } from "./Modals/CreateBookModal";
 
 const DashboardBooks = () => {
+  const [localBooks, setLocalBooks] = useState<Book[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -40,45 +31,21 @@ const DashboardBooks = () => {
     title: string;
   } | null>(null);
 
-  // Example data - replace with your API call
-  const books: Book[] = [
-    {
-      id: "1",
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      isbn: "978-0743273565",
-      category: "Fiction",
-      status: "Available",
-      description: "A story of decadence and excess.",
-      publishedDate: "1925-04-10",
-      quantity: 5,
-    },
-    {
-      id: "2",
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      isbn: "978-0446310789",
-      category: "Fiction",
-      status: "Borrowed",
-      description: "A story of racial injustice and loss of innocence.",
-      publishedDate: "1960-07-11",
-      quantity: 3,
-      borrower: "John Doe",
-      dueDate: "2024-02-15",
-    },
-  ];
+  // Load initial data
+  useEffect(() => {
+    setLocalBooks(books);
+  }, []);
 
-  const filteredBooks = books.filter(
-    (book) =>
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn.includes(searchTerm)
-  );
+  // Filter and paginate data
+  const filteredBooks = useMemo(() => {
+    return filterBooks(localBooks, searchTerm);
+  }, [localBooks, searchTerm]);
+
+  const currentItems = useMemo(() => {
+    return paginateBooks(filteredBooks, currentPage, itemsPerPage);
+  }, [filteredBooks, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredBooks.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -117,6 +84,11 @@ const DashboardBooks = () => {
     setBookToDelete(null);
   };
 
+  const openDeleteModal = ({ id, title }: { id: string; title: string }) => {
+    setBookToDelete({ id, title });
+    setIsDeleteModalOpen(true);
+  };
+
   const openUpdateModal = (book: Book) => {
     const bookData: BookFormData = {
       title: book.title,
@@ -129,11 +101,6 @@ const DashboardBooks = () => {
     };
     setSelectedBook(bookData);
     setIsUpdateModalOpen(true);
-  };
-
-  const openDeleteModal = (book: { id: string; title: string }) => {
-    setBookToDelete(book);
-    setIsDeleteModalOpen(true);
   };
 
   return (
@@ -270,92 +237,123 @@ const DashboardBooks = () => {
             ))}
           </tbody>
         </table>
+        {filteredBooks.length === 0 && (
+            <div className="text-center py-10">
+              <p className="text-gray-500 dark:text-gray-400">
+                No books found.{" "}
+                {searchTerm
+                  ? "Try a different search term."
+                  : "Start by adding a new book."}
+              </p>
+            </div>
+          )}
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
-        <div className="flex-1 flex justify-between sm:hidden">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Showing{" "}
-              <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
-              <span className="font-medium">
-                {Math.min(indexOfLastItem, filteredBooks.length)}
-              </span>{" "}
-              of <span className="font-medium">{filteredBooks.length}</span>{" "}
-              results
-            </p>
+      {filteredBooks.length > 0 && (
+        <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
           </div>
-          <div>
-            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Showing{" "}
+                <span className="font-medium">
+                  {Math.min(
+                    (currentPage - 1) * itemsPerPage + 1,
+                    filteredBooks.length
+                  )}
+                </span>{" "}
+                to{" "}
+                <span className="font-medium">
+                  {Math.min(currentPage * itemsPerPage, filteredBooks.length)}
+                </span>{" "}
+                of <span className="font-medium">{filteredBooks.length}</span>{" "}
+                results
+              </p>
+            </div>
+            <div>
+              <nav
+                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                aria-label="Pagination"
               >
-                <HiChevronLeft className="h-5 w-5" />
-              </button>
-              {[...Array(totalPages)].map((_, idx) => (
                 <button
-                  key={idx}
-                  onClick={() => handlePageChange(idx + 1)}
-                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm font-medium ${
-                    currentPage === idx + 1
-                      ? "z-10 bg-primarydark:bg-primary/20 border-primary text-primary dark:text-gray-200"
-                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }`}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {idx + 1}
+                  <span className="sr-only">Previous</span>
+                  <HiChevronLeft className="h-5 w-5" aria-hidden="true" />
                 </button>
-              ))}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-              >
-                <HiChevronRight className="h-5 w-5" />
-              </button>
-            </nav>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                        currentPage === page
+                          ? "z-10 bg-primary text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          : "text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Next</span>
+                  <HiChevronRight className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </nav>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Modals */}
-      <CreateBookModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateBook}
-      />
-
-      <UpdateBookModal
-        isOpen={isUpdateModalOpen}
-        onClose={() => setIsUpdateModalOpen(false)}
-        onSubmit={handleUpdateBook}
-        bookData={selectedBook}
-      />
-
-      <DeleteBookModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteBook}
-        bookTitle={bookToDelete?.title || ""}
-      />
+      <div className="relative z-50">
+        <CreateBookModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateBook}
+        />
+        <UpdateBookModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => {
+            setIsUpdateModalOpen(false);
+            setSelectedBook(null);
+          }}
+          onSubmit={handleUpdateBook}
+          bookData={selectedBook}
+        />
+        <DeleteBookModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setBookToDelete(null);
+          }}
+          onConfirm={handleDeleteBook}
+          bookTitle={bookToDelete?.title || ""}
+        />
+      </div>
     </div>
   );
 };
