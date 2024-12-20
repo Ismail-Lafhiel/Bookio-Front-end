@@ -18,7 +18,7 @@ const StatCard: FC<StatCardProps> = ({
   changeText,
   changeType,
 }) => (
-  <div className="dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 shadow-sm">
     <div className="flex items-center justify-between">
       <div className="flex items-center">
         <div className="p-3 rounded-full bg-primary-light dark:bg-primary-dark text-white">

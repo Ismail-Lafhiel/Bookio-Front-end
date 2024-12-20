@@ -18,7 +18,7 @@ const BookCard: FC<BookCardProps> = ({
   coverImage,
   category,
 }) => (
-  <div className="flex items-center space-x-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+  <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-sm">
     <img
       src={coverImage}
       alt={title}
