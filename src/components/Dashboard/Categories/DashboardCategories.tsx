@@ -30,12 +30,13 @@ const DashboardCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null
-  );
+  const [categoryToDelete, setCategoryToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Pagination settings
-  const pageSize = 10;
+  const pageSize = 5;
 
   // Load initial data
   useEffect(() => {
@@ -68,6 +69,7 @@ const DashboardCategories = () => {
   ) => {
     // Implementation for creating category
     console.log("Creating category:", categoryData);
+    setIsCreateModalOpen(false);
   };
 
   const handleUpdateCategory = (
@@ -75,11 +77,15 @@ const DashboardCategories = () => {
   ) => {
     // Implementation for updating category
     console.log("Updating category:", categoryData);
+    setIsUpdateModalOpen(false);
+    setSelectedCategory(null);
   };
 
   const handleDeleteCategory = () => {
     // Implementation for deleting category
-    console.log("Deleting category:", categoryToDelete?.id);
+    console.log("Deleting category:", categoryToDelete);
+    setIsDeleteModalOpen(false);
+    setCategoryToDelete(null);
   };
 
   return (
