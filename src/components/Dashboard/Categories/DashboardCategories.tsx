@@ -1,6 +1,6 @@
 // DashboardCategories.tsx
 import { useState, useEffect, useMemo } from "react";
-import { HiOutlinePlus, HiMagnifyingGlass } from "react-icons/hi2";
+import { HiOutlinePlus } from "react-icons/hi2";
 import {
   categories,
   filterCategories,
@@ -14,9 +14,10 @@ import {
   HiOutlinePencil,
   HiOutlineSearch,
   HiOutlineTrash,
-  HiPencil,
-  HiTrash,
 } from "react-icons/hi";
+import CreateCategoryModal from "./Modals/CreateCategoryModal";
+import UpdateCategoryModal from "./Modals/UpdateCategoryModal";
+import DeleteCategoryModal from "./Modals/DeleteCategoryModal";
 
 const DashboardCategories = () => {
   // States for data management
@@ -101,7 +102,6 @@ const DashboardCategories = () => {
           Add Category
         </button>
       </div>
-
       {/* Search and filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
@@ -126,7 +126,6 @@ const DashboardCategories = () => {
           </button>
         </div>
       </div>
-
       {/* Table */}
       <div className="mt-6 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
@@ -218,7 +217,6 @@ const DashboardCategories = () => {
           </div>
         )}
       </div>
-
       {/* Pagination */}
       {filteredCategories.length > 0 && (
         <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
@@ -298,12 +296,31 @@ const DashboardCategories = () => {
           </div>
         </div>
       )}
-
       {/* Modals */}
       <div className="relative z-50">
-        {/* Add CreateCategoryModal component here */}
-        {/* Add UpdateCategoryModal component here */}
-        {/* Add DeleteCategoryModal component here */}
+        <CreateCategoryModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateCategory}
+        />
+        <UpdateCategoryModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => {
+            setIsUpdateModalOpen(false);
+            setSelectedCategory(null);
+          }}
+          onSubmit={handleUpdateCategory}
+          categoryData={selectedCategory}
+        />
+        <DeleteCategoryModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setCategoryToDelete(null);
+          }}
+          onConfirm={handleDeleteCategory}
+          categoryName={categoryToDelete?.name || ""}
+        />
       </div>
     </div>
   );
