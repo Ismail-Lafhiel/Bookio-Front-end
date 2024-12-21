@@ -89,14 +89,19 @@ const Sidebar = () => {
           href: "/dashboard/users",
         },
         {
+          label: "Categories",
+          icon: <MdOutlineCategory className="w-6 h-6" />,
+          href: "/dashboard/categories",
+        },
+        {
           label: "Books",
           icon: <HiOutlineBookOpen className="w-6 h-6" />,
           href: "/dashboard/books",
         },
         {
-          label: "Categories",
-          icon: <MdOutlineCategory className="w-6 h-6" />,
-          href: "/dashboard/categories",
+          label: "Authors",
+          icon: <HiOutlineUsers className="w-6 h-6" />,
+          href: "/dashboard/authors",
         },
       ],
     },

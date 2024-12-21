@@ -1,12 +1,13 @@
 // components/layouts/DashboardFooter.tsx
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { FaGithub, FaTwitter, FaLinkedinIn } from "react-icons/fa";
+import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import {
   HiOutlineSupport,
   HiOutlineDocumentText,
   HiOutlineQuestionMarkCircle,
 } from "react-icons/hi";
+import { FaXTwitter } from "react-icons/fa6";
 
 const DashboardFooter: FC = () => {
   const currentYear = new Date().getFullYear();
@@ -102,7 +103,7 @@ const DashboardFooter: FC = () => {
             />
             <SocialLink
               href="https://twitter.com"
-              icon={<FaTwitter />}
+              icon={<FaXTwitter />}
               label="Twitter"
             />
             <SocialLink

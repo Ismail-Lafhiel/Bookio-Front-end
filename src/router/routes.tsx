@@ -30,6 +30,9 @@ const DashboardBooks = lazy(
 const DashboardCategories = lazy(
   () => import("../components/Dashboard/Categories/DashboardCategories")
 );
+const DashboardAuthors = lazy(
+  () => import("../components/Dashboard/Authors/DashboardAuthors")
+);
 // const DashboardUsers = lazy(() => import("../components/Dashboard/Users"));
 // const DashboardSettings = lazy(
 //   () => import("../components/Dashboard/Settings")
@@ -134,23 +137,15 @@ export const protectedRoutes: RouteObject[] = [
           },
         ],
       },
-      // {
-      //   path: "authors",
-      //   children: [
-      //     {
-      //       index: true,
-      //       element: <DashboardAuthors />,
-      //     },
-      //     {
-      //       path: "create",
-      //       element: <DashboardAuthors />,
-      //     },
-      //     {
-      //       path: "edit/:id",
-      //       element: <DashboardAuthors />,
-      //     },
-      //   ],
-      // },
+      {
+        path: "authors",
+        children: [
+          {
+            index: true,
+            element: <DashboardAuthors />,
+          },
+        ],
+      },
       // {
       //   path: "users",
       //   children: [
