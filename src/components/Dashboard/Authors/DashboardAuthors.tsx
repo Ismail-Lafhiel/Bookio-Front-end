@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { FiPlus, FiSearch, FiEdit2, FiTrash2 } from "react-icons/fi";
 import {
   Author,
@@ -9,11 +8,82 @@ import {
 } from "./data/authors";
 import Pagination from "../../UI/Pagination";
 import { formatDate } from "../../../utils/formatDate";
+import DeleteAuthorModal from "./Modals/DeleteAuthorModal";
+import UpdateAuthorModal from "./Modals/UpdateAuthorModal";
+import CreateAuthorModal from "./Modals/CreateAuthorModal";
 
 const DashboardAuthors = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const pageSize = 6;
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
+
+  // Modal handlers
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenUpdateModal = (author: Author) => {
+    setSelectedAuthor(author);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleOpenDeleteModal = (author: Author) => {
+    setSelectedAuthor(author);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseModals = () => {
+    setIsCreateModalOpen(false);
+    setIsUpdateModalOpen(false);
+    setIsDeleteModalOpen(false);
+    setSelectedAuthor(null);
+  };
+
+  // CRUD operations
+  const handleCreateAuthor = async (
+    authorData: Omit<Author, "id" | "booksCount" | "imageUrl">
+  ): Promise<void> => {
+    try {
+      // Implement create functionality
+      console.log("Creating author:", authorData);
+      handleCloseModals();
+      // Refresh the authors list or update the state
+    } catch (error) {
+      console.error("Error creating author:", error);
+      throw error;
+    }
+  };
+
+  const handleUpdateAuthor = async (
+    authorId: string,
+    authorData: Omit<Author, "id" | "booksCount" | "imageUrl">
+  ): Promise<void> => {
+    try {
+      // Implement update functionality
+      console.log("Updating author:", authorId, authorData);
+      handleCloseModals();
+      // Refresh the authors list or update the state
+    } catch (error) {
+      console.error("Error updating author:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteAuthor = async (authorId: string) => {
+    try {
+      // Implement delete functionality
+      console.log("Deleting author:", authorId);
+      handleCloseModals();
+      // Refresh the authors list or update the state
+    } catch (error) {
+      console.error("Error deleting author:", error);
+    }
+  };
 
   const filteredAuthors = filterAuthors(authors, searchTerm);
   const paginatedAuthors = paginateAuthors(
@@ -25,11 +95,6 @@ const DashboardAuthors = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const handleDelete = (authorId: string) => {
-    // Implement delete functionality
-    console.log("Delete author:", authorId);
   };
 
   return (
@@ -44,13 +109,13 @@ const DashboardAuthors = () => {
             Manage your book authors and their information
           </p>
         </div>
-        <Link
-          to="/dashboard/authors/new"
+        <button
+          onClick={handleOpenCreateModal}
           className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary/90 to-primary border border-transparent rounded-md shadow-sm hover:from-primary hover:to-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800 transition-all duration-200"
         >
           <FiPlus className="w-4 h-4 mr-2" />
           Add Author
-        </Link>
+        </button>
       </div>
 
       {/* Search Section */}
@@ -61,7 +126,7 @@ const DashboardAuthors = () => {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-primary dark:focus:ring-primary-dark focus:border-primary dark:focus:border-primary-dark sm:text-sm transition-colors duration-200"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-800 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-primary dark:focus:ring-primary-dark focus:border-primary dark:focus:border-primary-dark sm:text-sm transition-colors duration-200"
             placeholder="Search authors..."
             value={searchTerm}
             onChange={(e) => {
@@ -97,23 +162,20 @@ const DashboardAuthors = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
-                    <Link
-                      to={`/dashboard/authors/${author.id}`}
-                      className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary-light truncate transition-colors duration-200"
-                    >
+                    <p className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary-light truncate transition-colors duration-200">
                       {author.name}
-                    </Link>
+                    </p>
                     {/* Author Actions */}
                     <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2">
-                      <Link
-                        to={`/dashboard/authors/${author.id}/edit`}
+                      <button
+                        onClick={() => handleOpenUpdateModal(author)}
                         className="p-1 text-gray-500 hover:text-primary rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                         title="Edit author"
                       >
                         <FiEdit2 className="w-4 h-4" />
-                      </Link>
+                      </button>
                       <button
-                        onClick={() => handleDelete(author.id)}
+                        onClick={() => handleOpenDeleteModal(author)}
                         className="p-1 text-gray-500 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                         title="Delete author"
                       >
@@ -167,6 +229,30 @@ const DashboardAuthors = () => {
           </div>
         ))}
       </div>
+
+      <CreateAuthorModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseModals}
+        onSubmit={handleCreateAuthor}
+      />
+
+      {selectedAuthor && (
+        <>
+          <UpdateAuthorModal
+            isOpen={isUpdateModalOpen}
+            onClose={handleCloseModals}
+            onSubmit={(data) => handleUpdateAuthor(selectedAuthor.id, data)}
+            author={selectedAuthor}
+          />
+
+          <DeleteAuthorModal
+            isOpen={isDeleteModalOpen}
+            onClose={handleCloseModals}
+            onConfirm={() => handleDeleteAuthor(selectedAuthor.id)}
+            author={selectedAuthor}
+          />
+        </>
+      )}
 
       {/* Pagination */}
       {filteredAuthors.length > 0 && (
