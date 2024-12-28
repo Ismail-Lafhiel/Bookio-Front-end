@@ -1,3 +1,4 @@
+import { Category } from "../interfaces/Category";
 import api from "./api";
 
 // Types
@@ -5,12 +6,6 @@ export interface Book {
   id: string;
   title: string;
   // ... other book properties
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  // ... other category properties
 }
 
 // Books API
@@ -33,4 +28,8 @@ export const categoriesApi = {
   update: (id: string, data: Partial<Category>) =>
     api.patch<Category>(`/categories/${id}`, data),
   delete: (id: string) => api.delete(`/categories/${id}`),
+  findByAuthor: (authorId: string) =>
+    api.get<Category[]>(`/categories/author/${authorId}`),
+  findByBook: (bookId: string) =>
+    api.get<Category[]>(`/categories/book/${bookId}`),
 };

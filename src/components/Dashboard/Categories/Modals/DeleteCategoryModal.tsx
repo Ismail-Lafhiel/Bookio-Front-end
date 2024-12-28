@@ -2,6 +2,7 @@
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { HiExclamation } from "react-icons/hi";
+import toast from "react-hot-toast";
 
 interface DeleteCategoryModalProps {
   isOpen: boolean;
@@ -16,6 +17,12 @@ const DeleteCategoryModal = ({
   onConfirm,
   categoryName,
 }: DeleteCategoryModalProps) => {
+  const handleConfirm = () => {
+    onConfirm();
+    toast.success("Category deleted successfully");
+    onClose();
+  };
+
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -66,7 +73,7 @@ const DeleteCategoryModal = ({
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={onConfirm}
+                    onClick={handleConfirm}
                   >
                     Delete
                   </button>

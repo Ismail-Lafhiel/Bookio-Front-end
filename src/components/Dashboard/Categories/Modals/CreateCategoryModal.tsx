@@ -3,6 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { HiX } from "react-icons/hi";
 import { FormInput } from "../../../UI/FormInput";
 import { TagIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 interface CategoryFormData {
   name: string;
@@ -37,10 +38,23 @@ const CreateCategoryModal = ({
     }));
   };
 
+  const validateForm = () => {
+    const newErrors: Partial<CategoryFormData> = {};
+    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.description) newErrors.description = "Description is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    if (validateForm()) {
+      onSubmit(formData);
+      toast.success("Category created successfully");
+      onClose();
+    } else {
+      toast.error("Please fill in all required fields");
+    }
   };
 
   return (

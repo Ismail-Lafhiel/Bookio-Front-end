@@ -1,15 +1,8 @@
 // DashboardCategories.tsx
 import { useState, useEffect, useMemo } from "react";
 import { HiOutlinePlus } from "react-icons/hi2";
+import { categoriesApi } from "../../../services/apiService";
 import {
-  categories,
-  filterCategories,
-  paginateCategories,
-} from "./data/categories";
-import type { Category } from "./data/categories";
-import {
-  HiChevronLeft,
-  HiChevronRight,
   HiOutlineFilter,
   HiOutlinePencil,
   HiOutlineSearch,
@@ -19,10 +12,11 @@ import CreateCategoryModal from "./Modals/CreateCategoryModal";
 import UpdateCategoryModal from "./Modals/UpdateCategoryModal";
 import DeleteCategoryModal from "./Modals/DeleteCategoryModal";
 import Pagination from "../../UI/Pagination";
+import { Category, CategoryFormData, CategoryApiResponse } from "../../../interfaces/Category";
 
 const DashboardCategories = () => {
   // States for data management
-  const [localCategories, setLocalCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -41,16 +35,40 @@ const DashboardCategories = () => {
 
   // Load initial data
   useEffect(() => {
-    setLocalCategories(categories);
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesApi.getAll();
+        console.log("API response:", response);
+        const data = response.data.categories;
+        console.log("Data from API:", data);
+        if (Array.isArray(data)) {
+          setCategories(data);
+          console.log("Categories state set:", data);
+        } else {
+          console.error("Data is not an array:", data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // Filter and paginate data
   const filteredCategories = useMemo(() => {
-    return filterCategories(localCategories, searchQuery);
-  }, [localCategories, searchQuery]);
+    const filtered = categories.filter((category) =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    console.log("Filtered categories:", filtered);
+    return filtered;
+  }, [categories, searchQuery]);
 
   const paginatedCategories = useMemo(() => {
-    return paginateCategories(filteredCategories, currentPage, pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginated = filteredCategories.slice(startIndex, startIndex + pageSize);
+    console.log("Paginated categories:", paginated);
+    return paginated;
   }, [filteredCategories, currentPage]);
 
   const totalPages = Math.ceil(filteredCategories.length / pageSize);
@@ -65,28 +83,53 @@ const DashboardCategories = () => {
     setCurrentPage(page);
   };
 
-  const handleCreateCategory = (
-    categoryData: Omit<Category, "id" | "createdAt" | "booksCount">
+  const handleCreateCategory = async (
+    categoryData: CategoryFormData
   ) => {
-    // Implementation for creating category
-    console.log("Creating category:", categoryData);
-    setIsCreateModalOpen(false);
+    try {
+      const response = await categoriesApi.create(categoryData);
+      setCategories((prevCategories) => [...prevCategories, response.data]);
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      console.error("Failed to create category:", error);
+    }
   };
 
-  const handleUpdateCategory = (
-    categoryData: Omit<Category, "id" | "createdAt" | "booksCount">
+  const handleUpdateCategory = async (
+    categoryData: CategoryFormData
   ) => {
-    // Implementation for updating category
-    console.log("Updating category:", categoryData);
-    setIsUpdateModalOpen(false);
-    setSelectedCategory(null);
+    if (!selectedCategory) return;
+
+    try {
+      const response = await categoriesApi.update(
+        selectedCategory.id,
+        categoryData
+      );
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.id === selectedCategory.id ? response.data : category
+        )
+      );
+      setIsUpdateModalOpen(false);
+      setSelectedCategory(null);
+    } catch (error) {
+      console.error("Failed to update category:", error);
+    }
   };
 
-  const handleDeleteCategory = () => {
-    // Implementation for deleting category
-    console.log("Deleting category:", categoryToDelete);
-    setIsDeleteModalOpen(false);
-    setCategoryToDelete(null);
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+
+    try {
+      await categoriesApi.delete(categoryToDelete.id);
+      setCategories((prevCategories) =>
+        prevCategories.filter((category) => category.id !== categoryToDelete.id)
+      );
+      setIsDeleteModalOpen(false);
+      setCategoryToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+    }
   };
 
   const itemsPerPage = 5;
@@ -250,7 +293,14 @@ const DashboardCategories = () => {
             setSelectedCategory(null);
           }}
           onSubmit={handleUpdateCategory}
-          categoryData={selectedCategory}
+          categoryData={
+            selectedCategory
+              ? {
+                  name: selectedCategory.name,
+                  description: selectedCategory.description || "",
+                }
+              : null
+          }
         />
         <DeleteCategoryModal
           isOpen={isDeleteModalOpen}
