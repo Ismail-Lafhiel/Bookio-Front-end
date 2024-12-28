@@ -3,7 +3,7 @@ import { Amplify } from "aws-amplify";
 const region = import.meta.env.VITE_AWS_REGION;
 const bucket = import.meta.env.VITE_S3_BUCKET;
 
-console.log("Amplify Configuration:", { region, bucket });
+// console.log("Amplify Configuration:", { region, bucket });
 
 Amplify.configure({
   Auth: {

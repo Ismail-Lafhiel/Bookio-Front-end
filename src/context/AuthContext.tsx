@@ -14,57 +14,10 @@ import {
   resetPassword,
   confirmResetPassword,
   updateUserAttributes,
-} from "aws-amplify/auth";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
-import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";
-
-interface User {
-  email: string;
-  given_name: string;
-  family_name: string;
-  preferred_username: string;
-  birthdate: string;
-  sub?: string;
-  updated_at?: string;
-  profile_pic?: string | null;
-  background_pic?: string | null;
-  bio?: string | null;
-  social_links?: {
-    twitter?: string;
-    facebook?: string;
-    instagram?: string;
-    discord?: string;
-  } | null;
-}
-
-interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  preferredUsername: string;
-  birthdate: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-  confirmForgotPassword: (
-    email: string,
-    code: string,
-    newPassword: string
-  ) => Promise<void>;
-  logout: () => Promise<void>;
-  updateUserProfile: (data: Partial<User>) => Promise<void>;
-  uploadProfilePicture: (file: File) => Promise<string>;
-  uploadBackgroundPicture: (file: File) => Promise<string>;
-}
+} from "../services/authService";
+import { createS3Client, generateUniqueFileName, deleteFile } from "../services/s3Service";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { User, RegisterData, AuthContextType } from "../interfaces";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -108,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   };
+
   const checkAuth = async () => {
     try {
       const currentUser = await getCurrentUser();
@@ -235,27 +189,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Create S3 client with Cognito Identity Pool credentials
-  const createS3Client = () => {
-    return new S3Client({
-      region: import.meta.env.VITE_AWS_REGION,
-      credentials: fromCognitoIdentityPool({
-        client: new CognitoIdentityClient({
-          region: import.meta.env.VITE_AWS_REGION,
-        }),
-        identityPoolId: import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID!,
-      }),
-    });
-  };
-
-  // Utility to generate unique filename
-  const generateUniqueFileName = (file: File, folder: string) => {
-    const fileExtension = file.name.split(".").pop();
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    return `${folder}/${timestamp}_${randomString}.${fileExtension}`;
-  };
-
   // Upload method for profile picture
   const uploadProfilePicture = async (file: File) => {
     try {
@@ -300,6 +233,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${
         import.meta.env.VITE_AWS_REGION
       }.amazonaws.com/${fileName}`;
+
+      // Delete old profile picture if it exists
+      if (user?.profile_pic) {
+        await deleteFile(user.profile_pic);
+      }
 
       // Update user attributes with the S3 key
       await updateUserAttributes({
@@ -367,6 +305,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const fileUrl = `https://${import.meta.env.VITE_S3_BUCKET}.s3.${
         import.meta.env.VITE_AWS_REGION
       }.amazonaws.com/${fileName}`;
+
+      // Delete old background picture if it exists
+      if (user?.background_pic) {
+        await deleteFile(user.background_pic);
+      }
 
       // Update user attributes with the S3 key
       await updateUserAttributes({
