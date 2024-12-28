@@ -15,6 +15,8 @@ export interface User {
     instagram?: string;
     discord?: string;
   } | null;
+  isAdmin?: boolean;
+  role?: string;
 }
 
 export interface RegisterData {
@@ -43,4 +45,6 @@ export interface AuthContextType {
   updateUserProfile: (data: Partial<User>) => Promise<void>;
   uploadProfilePicture: (file: File) => Promise<string>;
   uploadBackgroundPicture: (file: File) => Promise<string>;
+  isAdmin: boolean;
+  checkUserRole: () => boolean;
 }

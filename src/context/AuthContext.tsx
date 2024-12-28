@@ -15,11 +15,40 @@ import {
   confirmResetPassword,
   updateUserAttributes,
 } from "../services/authService";
-import { createS3Client, generateUniqueFileName, deleteFile } from "../services/s3Service";
+import {
+  createS3Client,
+  generateUniqueFileName,
+  deleteFile,
+} from "../services/s3Service";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { User, RegisterData, AuthContextType } from "../interfaces";
+import {
+  CognitoIdentityProviderClient,
+  AdminAddUserToGroupCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const cognitoClient = new CognitoIdentityProviderClient();
+
+const addUserToGroup = async ({
+  userPoolId,
+  username,
+  groupName,
+}: {
+  userPoolId: string;
+  username: string;
+  groupName: string;
+}) => {
+  const params = {
+    GroupName: groupName,
+    UserPoolId: userPoolId,
+    Username: username,
+  };
+
+  const command = new AdminAddUserToGroupCommand(params);
+  await cognitoClient.send(command);
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -85,6 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           background_pic: attributes["custom:background_pic"] || null,
           bio: attributes["custom:bio"] || null,
           social_links: socialLinks,
+          role: attributes["custom:role"] || "USER",
         });
       }
     } catch (err) {
@@ -126,6 +156,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             birthdate: data.birthdate,
           },
         },
+      });
+
+      // Add user to the 'USER' group
+      await addUserToGroup({
+        userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
+        username: data.email,
+        groupName: "USER",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
@@ -261,7 +298,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Similar method for background picture
   const uploadBackgroundPicture = async (file: File) => {
     try {
       // Validate environment variables
@@ -332,6 +368,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   };
+  const checkUserRole = () => {
+    return user?.role === "ADMIN";
+  };
 
   return (
     <AuthContext.Provider
@@ -348,6 +387,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         updateUserProfile,
         uploadProfilePicture,
         uploadBackgroundPicture,
+        isAdmin: checkUserRole(),
+        checkUserRole,
       }}
     >
       {children}

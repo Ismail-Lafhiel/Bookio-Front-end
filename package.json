@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-amplify/auth": "^6.8.2",
     "@aws-sdk/client-cognito-identity": "^3.713.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.716.0",
     "@aws-sdk/client-s3": "^3.713.0",
     "@aws-sdk/credential-provider-cognito-identity": "^3.713.0",
     "@aws-sdk/s3-request-presigner": "^3.713.0",
