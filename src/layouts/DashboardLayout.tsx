@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
 
   // Close sidebar when route changes (mobile)
   useEffect(() => {
@@ -30,6 +30,10 @@ const DashboardLayout = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/forbidden" replace />;
   }
 
   return (

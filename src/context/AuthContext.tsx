@@ -26,6 +26,7 @@ import {
   CognitoIdentityProviderClient,
   AdminAddUserToGroupCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { fetchAuthSession } from "@aws-amplify/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -54,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -91,16 +93,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const checkUserRole = () => {
+    console.log("Checking user role:", user?.role);
+    return user?.role === "ADMIN";
+  };
+
   const checkAuth = async () => {
     try {
       const currentUser = await getCurrentUser();
       if (currentUser) {
         const attributes = await fetchUserAttributes();
 
+        // Get the current session using fetchAuthSession
+        const session = await fetchAuthSession();
+        const cognitoGroups =
+          session.tokens?.accessToken?.payload["cognito:groups"];
+        const groups = Array.isArray(cognitoGroups) ? cognitoGroups : [];
+
+        // Log groups for debugging
+        console.log("User groups:", groups);
+
         // Parse custom attributes if they exist
         const socialLinks = attributes["custom:social_links"]
           ? JSON.parse(attributes["custom:social_links"])
           : null;
+
+        // Check if user is admin
+        const userIsAdmin = groups.includes("ADMIN");
 
         setUser({
           email: attributes.email ?? "",
@@ -114,12 +133,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           background_pic: attributes["custom:background_pic"] || null,
           bio: attributes["custom:bio"] || null,
           social_links: socialLinks,
-          role: attributes["custom:role"] || "USER",
+          isAdmin: userIsAdmin,
+          role: userIsAdmin ? "ADMIN" : "USER",
         });
+
+        // Set the isAdmin state
+        setIsAdmin(userIsAdmin);
+
+        console.log("User isAdmin:", userIsAdmin);
       }
     } catch (err) {
       console.error("Auth check failed:", err);
       setUser(null);
+      setIsAdmin(false);
     } finally {
       setIsLoading(false);
     }
@@ -367,9 +393,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-  const checkUserRole = () => {
-    return user?.role === "ADMIN";
   };
 
   return (

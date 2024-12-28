@@ -14,13 +14,16 @@ const Books = lazy(() => import("../components/Books/Books"));
 const Book = lazy(() => import("../components/Book/Book"));
 const Authors = lazy(() => import("../components/Authors/Authors"));
 const Author = lazy(() => import("../components/Author/Author"));
-const NotFound = lazy(() => import("../components/NotFound"));
 const Login = lazy(() => import("../components/Auth/Login"));
 const Register = lazy(() => import("../components/Auth/Register"));
 const ForgotPassword = lazy(() => import("../components/Auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("../components/Auth/ResetPassword"));
 const Profile = lazy(() => import("../components/Auth/Profile"));
 const VerifyEmail = lazy(() => import("../components/Auth/VerifyEmail"));
+
+//redirection routes
+const NotFound = lazy(() => import("../components/NotFound"));
+const Forbidden = lazy(() => import("../components/Forbidden"));
 
 //dashboard components
 const Dashboard = lazy(() => import("../components/Dashboard/Dashboard"));
@@ -62,6 +65,10 @@ export const publicRoutes: RouteObject[] = [
       {
         path: "/authors/:name",
         element: <Author />,
+      },
+      {
+        path: "/forbidden",
+        element: <Forbidden />,
       },
       {
         path: "*",
