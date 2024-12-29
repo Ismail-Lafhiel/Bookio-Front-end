@@ -14,7 +14,7 @@ import {
   CalculatorIcon,
 } from "@heroicons/react/24/outline";
 
-export interface BookFormData {
+interface BookFormData {
   title: string;
   author: string;
   isbn: string;

@@ -6,103 +6,158 @@ import {
   HiOutlinePlus,
   HiOutlinePencil,
   HiOutlineTrash,
-  HiChevronLeft,
-  HiChevronRight,
 } from "react-icons/hi";
 import CreateBookModal from "./Modals/CreateBookModal";
 import DeleteBookModal from "./Modals/DeleteBookModal";
 import UpdateBookModal from "./Modals/UpdateBookModal";
-import { books, filterBooks, paginateBooks } from "./data/books";
-import type { Book } from "./data/books";
-import type { BookFormData } from "./Modals/CreateBookModal";
 import Pagination from "../../UI/Pagination";
+import { booksApi, categoriesApi } from "../../../services/apiService";
+import { Book, BookFormData } from "../../../interfaces/book";
+import { Category } from "../../../interfaces/Category";
 
 const DashboardBooks = () => {
-  const [localBooks, setLocalBooks] = useState<Book[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [books, setBooks] = useState<Book[]>([]);
+  const [categories, setCategories] = useState<{ [key: string]: Category }>({});
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<BookFormData | null>(null);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [bookToDelete, setBookToDelete] = useState<{
     id: string;
     title: string;
   } | null>(null);
 
+  // Pagination settings
+  const pageSize = 5;
+
   // Load initial data
   useEffect(() => {
-    setLocalBooks(books);
+    const fetchBooks = async () => {
+      try {
+        const response = await booksApi.getAll();
+        console.log("API response:", response);
+        const data = response.data.books;
+        console.log("Data from API:", data);
+        if (Array.isArray(data)) {
+          setBooks(data);
+          console.log("Categories state set:", data);
+        } else {
+          console.error("Data is not an array:", data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesApi.getAll();
+        const categoriesMap = response.data.categories.reduce(
+          (acc, category) => {
+            acc[category.id] = category;
+            return acc;
+          },
+          {} as { [key: string]: Category }
+        );
+        setCategories(categoriesMap);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // Filter and paginate data
   const filteredBooks = useMemo(() => {
-    return filterBooks(localBooks, searchTerm);
-  }, [localBooks, searchTerm]);
+    const filtered = books.filter((books) =>
+      books.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    console.log("Filtered categories:", filtered);
+    return filtered;
+  }, [books, searchQuery]);
 
-  const currentItems = useMemo(() => {
-    return paginateBooks(filteredBooks, currentPage, itemsPerPage);
-  }, [filteredBooks, currentPage, itemsPerPage]);
+  const paginatedBooks = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginated = filteredBooks.slice(startIndex, startIndex + pageSize);
+    console.log("Paginated categories:", paginated);
+    return paginated;
+  }, [filteredBooks, currentPage]);
 
-  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredBooks.length / pageSize);
 
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const getStatusColor = (status: Book["status"]) => {
     switch (status) {
-      case "Available":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-500";
-      case "Borrowed":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-500";
-      case "Reserved":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-500";
+      case "AVAILABLE":
+        return "lowercase bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-500";
+      case "BORROWED":
+        return "lowercase bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-500";
+      case "UNAVAILABLE":
+        return "lowercase bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-500";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-500";
+        return "lowercase bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-500";
     }
   };
 
-  const handleCreateBook = (bookData: BookFormData) => {
-    // Handle create book logic
-    console.log("Creating book:", bookData);
-    setIsCreateModalOpen(false);
+  const handleCreateBook = async (bookData: BookFormData) => {
+    try {
+      const response = await booksApi.create(bookData);
+      setBooks((prevBooks) => [...prevBooks, response.data]);
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      console.error("Failed to create category:", error);
+    }
   };
 
-  const handleUpdateBook = (bookData: BookFormData) => {
-    // Handle update book logic
-    console.log("Updating book:", bookData);
-    setIsUpdateModalOpen(false);
-    setSelectedBook(null);
+  const handleUpdateBook = async (bookData: BookFormData) => {
+    if (!selectedBook) return;
+
+    try {
+      const response = await booksApi.update(selectedBook.id, bookData);
+      setBooks((prevBooks) =>
+        prevBooks.map((book) =>
+          book.id === selectedBook.id ? response.data : book
+        )
+      );
+      setIsUpdateModalOpen(false);
+      setSelectedBook(null);
+    } catch (error) {
+      console.error("Failed to update category:", error);
+    }
   };
 
-  const handleDeleteBook = () => {
-    // Handle delete book logic
-    console.log("Deleting book:", bookToDelete);
-    setIsDeleteModalOpen(false);
-    setBookToDelete(null);
+  const handleDeleteBook = async() => {
+    if (!bookToDelete) return;
+
+    try {
+      await booksApi.delete(bookToDelete.id);
+      setBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== bookToDelete.id)
+      );
+      setIsDeleteModalOpen(false);
+      setBookToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+    }
   };
 
-  const openDeleteModal = ({ id, title }: { id: string; title: string }) => {
-    setBookToDelete({ id, title });
-    setIsDeleteModalOpen(true);
-  };
-
-  const openUpdateModal = (book: Book) => {
-    const bookData: BookFormData = {
-      title: book.title,
-      author: book.author,
-      isbn: book.isbn,
-      category: book.category,
-      description: book.description,
-      publishedDate: book.publishedDate,
-      quantity: book.quantity,
-    };
-    setSelectedBook(bookData);
-    setIsUpdateModalOpen(true);
-  };
+  const itemsPerPage = 5;
 
   return (
     <div className="space-y-6">
@@ -136,8 +191,8 @@ const DashboardBooks = () => {
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-800 dark:border-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
               placeholder="Search books..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
@@ -182,7 +237,19 @@ const DashboardBooks = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
+                Rating
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
                 Status
+              </th>
+              <th
+                scope="col"
+                className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                Created at
               </th>
               <th
                 scope="col"
@@ -193,19 +260,22 @@ const DashboardBooks = () => {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {currentItems.map((book) => (
+            {paginatedBooks.map((book) => (
               <tr key={book.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   {book.title}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {book.author}
+                  {book.authorId}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {book.isbn}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {book.category}
+                  {categories[book.categoryId]?.name || book.categoryId}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {book.rating}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -216,18 +286,25 @@ const DashboardBooks = () => {
                     {book.status}
                   </span>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {new Date(book.createdAt).toLocaleDateString()}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-3">
                     <button
-                      onClick={() => openUpdateModal(book)}
+                      onClick={() => {
+                        setSelectedBook(book);
+                        setIsUpdateModalOpen(true);
+                      }}
                       className="text-primary dark:text-primary hover:text-primary dark:hover:text-primary"
                     >
                       <HiOutlinePencil className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() =>
-                        openDeleteModal({ id: book.id, title: book.title })
-                      }
+                      onClick={() => {
+                        setBookToDelete(book);
+                        setIsDeleteModalOpen(true);
+                      }}
                       className="text-red-600 dark:text-red-500 hover:text-red-900 dark:hover:text-red-400"
                     >
                       <HiOutlineTrash className="h-5 w-5" />
@@ -242,7 +319,7 @@ const DashboardBooks = () => {
           <div className="text-center py-10">
             <p className="text-gray-500 dark:text-gray-400">
               No books found.{" "}
-              {searchTerm
+              {searchQuery
                 ? "Try a different search term."
                 : "Start by adding a new book."}
             </p>
@@ -275,7 +352,22 @@ const DashboardBooks = () => {
             setSelectedBook(null);
           }}
           onSubmit={handleUpdateBook}
-          bookData={selectedBook}
+          bookData={
+            selectedBook
+              ? {
+                  title: selectedBook.title,
+                  authorId: selectedBook.authorId,
+                  categoryId: selectedBook.categoryId,
+                  isbn: selectedBook.isbn,
+                  description: selectedBook.description,
+                  publishedYear: selectedBook.publishedYear,
+                  quantity: selectedBook.quantity,
+                  cover: selectedBook.cover,
+                  pdf: selectedBook.pdf,
+                  rating: selectedBook.rating,
+                }
+              : null
+          }
         />
         <DeleteBookModal
           isOpen={isDeleteModalOpen}

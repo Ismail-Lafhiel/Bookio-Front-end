@@ -12,7 +12,7 @@ import CreateCategoryModal from "./Modals/CreateCategoryModal";
 import UpdateCategoryModal from "./Modals/UpdateCategoryModal";
 import DeleteCategoryModal from "./Modals/DeleteCategoryModal";
 import Pagination from "../../UI/Pagination";
-import { Category, CategoryFormData, CategoryApiResponse } from "../../../interfaces/Category";
+import { Category, CategoryFormData } from "../../../interfaces/Category";
 
 const DashboardCategories = () => {
   // States for data management

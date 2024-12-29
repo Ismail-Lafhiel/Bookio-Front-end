@@ -13,22 +13,21 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      // Get the current session using the new syntax
       const { tokens } = await fetchAuthSession();
       const token = tokens?.accessToken?.toString();
 
-      // Add token to header
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
 
       return config;
     } catch (error) {
-      // Handle error or proceed without token
+      console.error("Auth error:", error);
       return config;
     }
   },
   (error: AxiosError) => {
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -39,30 +38,24 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
 
-    // Handle 401 (Unauthorized) errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Refresh the session using the new syntax
         const { tokens } = await fetchAuthSession();
         const token = tokens?.accessToken?.toString();
 
-        // Update the token in the original request
         if (token) {
           originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
         }
-
-        // Retry the original request
-        return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
+        console.error("Token refresh error:", refreshError);
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
 
-    // Handle 403 (Forbidden) errors
     if (error.response?.status === 403) {
       window.location.href = "/forbidden";
     }
@@ -70,5 +63,4 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 export default api;
