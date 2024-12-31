@@ -2,12 +2,14 @@
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { HiExclamation } from "react-icons/hi";
+import { booksApi } from "../../../../services/apiService";
 
 interface DeleteBookModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (deletedBookId: string) => void;
   bookTitle: string;
+  bookData: { id: string };
 }
 
 const DeleteBookModal = ({
@@ -15,7 +17,21 @@ const DeleteBookModal = ({
   onClose,
   onConfirm,
   bookTitle,
+  bookData,
 }: DeleteBookModalProps) => {
+  const handleConfirm = async () => {
+    try {
+      await booksApi.delete(bookData.id);
+      onConfirm(bookData.id);
+      onClose();
+    } catch (error: any) {
+      console.error("Failed to delete book:", error);
+      if (error.response?.data?.message) {
+        console.error("Server error message:", error.response.data.message);
+      }
+    }
+  };
+
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -66,7 +82,7 @@ const DeleteBookModal = ({
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={onConfirm}
+                    onClick={handleConfirm}
                   >
                     Delete
                   </button>

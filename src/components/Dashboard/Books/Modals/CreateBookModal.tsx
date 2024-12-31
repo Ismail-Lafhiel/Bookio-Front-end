@@ -1,9 +1,10 @@
 // CreateBookModal.tsx
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { HiX } from "react-icons/hi";
 import { FormInput } from "../../../UI/FormInput";
 import { FormSelect } from "../../../UI/FormSelect";
+import { FormNumberInput } from "../../../UI/FormNumberInput";
 import {
   BookOpenIcon,
   UserIcon,
@@ -11,23 +12,21 @@ import {
   TagIcon,
   DocumentTextIcon,
   CalendarIcon,
-  CalculatorIcon,
 } from "@heroicons/react/24/outline";
-
-interface BookFormData {
-  title: string;
-  author: string;
-  isbn: string;
-  category: string;
-  description: string;
-  publishedDate: string;
-  quantity: number;
-}
+import { Book, BookFormData } from "../../../../interfaces/book";
+import {
+  booksApi,
+  categoriesApi,
+  authorsApi,
+} from "../../../../services/apiService";
+import { FormFileInput } from "../../../UI/FormFileInput";
+import { Category } from "../../../../interfaces/Category";
+import { Author } from "../../../types/author.types";
 
 interface CreateBookModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (bookData: BookFormData) => void;
+  onSubmit: (bookData: Book) => void;
 }
 
 interface FormErrors {
@@ -41,15 +40,65 @@ const CreateBookModal = ({
 }: CreateBookModalProps) => {
   const [formData, setFormData] = useState<BookFormData>({
     title: "",
-    author: "",
+    authorId: "",
+    categoryId: "",
     isbn: "",
-    category: "",
     description: "",
-    publishedDate: "",
+    publishedYear: new Date().getFullYear(),
     quantity: 1,
+    cover: "",
+    pdf: "",
+    rating: 0,
   });
 
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [categories, setCategories] = useState<
+    {
+      value: string;
+      label: string;
+    }[]
+  >([]);
+  const [authors, setAuthors] = useState<{ value: string; label: string }[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesApi.getAll();
+        const categoryOptions = response.data.categories.map(
+          (category: Category) => ({
+            value: category.id,
+            label: category.name,
+          })
+        );
+        setCategories(categoryOptions);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const response = await authorsApi.getAll();
+        const authorOptions = response.data.authors.map((author: Author) => ({
+          value: author.id,
+          label: author.name,
+        }));
+        setAuthors(authorOptions);
+      } catch (error) {
+        console.error("Failed to fetch authors:", error);
+      }
+    };
+
+    fetchAuthors();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -59,14 +108,72 @@ const CreateBookModal = ({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "quantity" ? Number(value) : value,
+      [name]:
+        name === "quantity" || name === "publishedYear" || name === "rating"
+          ? Number(value)
+          : value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, files } = e.target;
+    if (files && files.length > 0) {
+      if (name === "cover") {
+        setCoverFile(files[0]);
+      } else if (name === "pdf") {
+        setPdfFile(files[0]);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    if (!coverFile || !pdfFile) {
+      setErrors((prev) => ({
+        ...prev,
+        cover: !coverFile ? "Cover file is required" : undefined,
+        pdf: !pdfFile ? "PDF file is required" : undefined,
+      }));
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("authorId", formData.authorId);
+    formDataToSend.append("categoryId", formData.categoryId);
+    formDataToSend.append("isbn", formData.isbn);
+    formDataToSend.append("description", formData.description || "");
+    formDataToSend.append("publishedYear", formData.publishedYear.toString());
+    formDataToSend.append("quantity", formData.quantity.toString());
+    formDataToSend.append("rating", (formData.rating ?? 0).toString());
+    formDataToSend.append("cover", coverFile);
+    formDataToSend.append("pdf", pdfFile);
+
+    try {
+      const response = await booksApi.create(formDataToSend);
+      onSubmit(response.data as Book);
+      onClose();
+    } catch (error: any) {
+      console.error("Failed to create book:", error);
+      if (error.response?.data?.message) {
+        const serverErrors = error.response.data.message;
+        const newErrors: FormErrors = {};
+        serverErrors.forEach((error: string) => {
+          const [field] = error.split(" ");
+          newErrors[field.toLowerCase()] = error;
+        });
+        setErrors(newErrors);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
   };
 
   return (
@@ -132,19 +239,21 @@ const CreateBookModal = ({
                           labelClassName="dark:text-gray-200"
                         />
 
-                        <FormInput
+                        <FormSelect
                           label="Author"
-                          placeholder="Enter author name"
+                          placeholder="Select author"
                           id="author"
                           name="author"
-                          type="text"
                           required
-                          value={formData.author}
-                          onChange={handleChange}
+                          value={formData.authorId}
+                          onChange={(e) =>
+                            handleSelectChange("authorId", e.target.value)
+                          }
                           error={errors.author}
                           icon={UserIcon}
                           className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                           labelClassName="dark:text-gray-200"
+                          options={authors}
                         />
 
                         <FormInput
@@ -168,18 +277,15 @@ const CreateBookModal = ({
                           id="category"
                           name="category"
                           required
-                          value={formData.category}
-                          onChange={handleChange}
+                          value={formData.categoryId}
+                          onChange={(e) =>
+                            handleSelectChange("categoryId", e.target.value)
+                          }
                           error={errors.category}
                           icon={TagIcon}
                           className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                           labelClassName="dark:text-gray-200"
-                          options={[
-                            { value: "Fiction", label: "Fiction" },
-                            { value: "Non-Fiction", label: "Non-Fiction" },
-                            { value: "Science", label: "Science" },
-                            { value: "Technology", label: "Technology" },
-                          ]}
+                          options={categories}
                         />
 
                         <div className="sm:col-span-2">
@@ -201,31 +307,65 @@ const CreateBookModal = ({
                         </div>
 
                         <FormInput
-                          label="Published Date"
-                          id="publishedDate"
-                          name="publishedDate"
-                          type="date"
+                          label="Published Year"
+                          id="publishedYear"
+                          name="publishedYear"
+                          type="number"
                           required
-                          value={formData.publishedDate}
+                          value={formData.publishedYear.toString()}
                           onChange={handleChange}
-                          error={errors.publishedDate}
+                          error={errors.publishedYear}
                           icon={CalendarIcon}
                           className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                           labelClassName="dark:text-gray-200"
                         />
 
-                        <FormInput
+                        <FormNumberInput
                           label="Quantity"
                           placeholder="Enter quantity"
                           id="quantity"
                           name="quantity"
-                          type="number"
-                          min="1"
+                          min={1}
                           required
-                          value={formData.quantity.toString()}
+                          value={formData.quantity || 0}
                           onChange={handleChange}
                           error={errors.quantity}
-                          icon={CalculatorIcon}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
+
+                        <FormFileInput
+                          label="Cover"
+                          id="cover"
+                          name="cover"
+                          required
+                          onChange={handleFileChange}
+                          error={errors.cover}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
+
+                        <FormFileInput
+                          label="PDF"
+                          id="pdf"
+                          name="pdf"
+                          required
+                          onChange={handleFileChange}
+                          error={errors.pdf}
+                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                          labelClassName="dark:text-gray-200"
+                        />
+
+                        <FormNumberInput
+                          label="Rating"
+                          placeholder="Enter rating"
+                          id="rating"
+                          name="rating"
+                          min={0}
+                          max={5}
+                          value={formData.rating || 0}
+                          onChange={handleChange}
+                          error={errors.rating}
                           className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                           labelClassName="dark:text-gray-200"
                         />

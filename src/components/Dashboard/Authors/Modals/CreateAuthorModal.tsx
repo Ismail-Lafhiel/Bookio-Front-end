@@ -13,7 +13,7 @@ import {
   XMarkIcon as HiX,
 } from "@heroicons/react/24/outline";
 import { AuthorFormData, CreateAuthorModalProps } from "../../../types/author.types";
-
+import { authorsApi } from "../../../../services/apiService";
 
 const CreateAuthorModal = ({ isOpen, onClose, onSubmit }: CreateAuthorModalProps) => {
   const [formData, setFormData] = useState<AuthorFormData>({
@@ -52,7 +52,8 @@ const CreateAuthorModal = ({ isOpen, onClose, onSubmit }: CreateAuthorModalProps
     e.preventDefault();
     setIsLoading(true);
     try {
-      await onSubmit(formData);
+      await authorsApi.create(formData);
+      onSubmit(formData);
       onClose();
       setFormData({
         name: "",

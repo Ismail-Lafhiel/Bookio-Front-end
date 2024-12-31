@@ -1,5 +1,5 @@
 export interface Book {
-  id: string;
+  id?: string;
   title: string;
   authorId: string;
   categoryId: string;
@@ -15,18 +15,26 @@ export interface Book {
   updatedAt: string;
   startDate?: string;
   returnDate?: string;
-  rating: number;
+  rating?: number;
+}
+
+export interface BookApiResponse {
+  message: string;
+  book: Book;
+  books: Book[];
+  lastEvaluatedKey?: string;
+}
+
+export interface BorrowBook {
+  borrowerId: string;
+  startDate: string;
+  returnDate: string;
 }
 
 export enum BookStatus {
   AVAILABLE = "AVAILABLE",
   BORROWED = "BORROWED",
   UNAVAILABLE = "UNAVAILABLE",
-}
-
-export interface BorrowBook {
-  startDate: string;
-  returnDate: string;
 }
 
 export interface BookFormData {
@@ -37,12 +45,7 @@ export interface BookFormData {
   description?: string;
   publishedYear: number;
   quantity: number;
-  cover: string;
-  pdf: string;
-  rating: number;
-}
-
-export interface BookApiResponse {
-  message: string;
-  books: Book[];
+  cover?: string;
+  pdf?: string;
+  rating?: number;
 }

@@ -13,7 +13,7 @@ import {
   XMarkIcon as HiX,
 } from "@heroicons/react/24/outline";
 import { AuthorFormData, UpdateAuthorModalProps } from "../../../types/author.types";
-
+import { authorsApi } from "../../../../services/apiService";
 
 const UpdateAuthorModal = ({
   isOpen,
@@ -76,7 +76,8 @@ const UpdateAuthorModal = ({
     e.preventDefault();
     setIsLoading(true);
     try {
-      await onSubmit(formData);
+      await authorsApi.update(author.id, formData);
+      onSubmit(formData);
       onClose();
     } catch (error) {
       console.error("Error updating author:", error);

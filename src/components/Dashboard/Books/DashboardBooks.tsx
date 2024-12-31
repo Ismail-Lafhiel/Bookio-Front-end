@@ -7,17 +7,24 @@ import {
   HiOutlinePencil,
   HiOutlineTrash,
 } from "react-icons/hi";
+import { toast } from "react-hot-toast";
 import CreateBookModal from "./Modals/CreateBookModal";
 import DeleteBookModal from "./Modals/DeleteBookModal";
 import UpdateBookModal from "./Modals/UpdateBookModal";
 import Pagination from "../../UI/Pagination";
-import { booksApi, categoriesApi } from "../../../services/apiService";
-import { Book, BookFormData } from "../../../interfaces/book";
+import {
+  booksApi,
+  categoriesApi,
+  authorsApi,
+} from "../../../services/apiService";
+import { Book } from "../../../interfaces/book";
 import { Category } from "../../../interfaces/Category";
+import { Author } from "../../../interfaces/author";
 
 const DashboardBooks = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<{ [key: string]: Category }>({});
+  const [authors, setAuthors] = useState<{ [key: string]: Author }>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -38,17 +45,14 @@ const DashboardBooks = () => {
     const fetchBooks = async () => {
       try {
         const response = await booksApi.getAll();
-        console.log("API response:", response);
         const data = response.data.books;
-        console.log("Data from API:", data);
         if (Array.isArray(data)) {
           setBooks(data);
-          console.log("Categories state set:", data);
         } else {
           console.error("Data is not an array:", data);
         }
       } catch (error) {
-        console.error("Failed to fetch categories:", error);
+        console.error("Failed to fetch books:", error);
       }
     };
 
@@ -73,6 +77,23 @@ const DashboardBooks = () => {
     };
 
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const response = await authorsApi.getAll();
+        const authorsMap = response.data.authors.reduce((acc, author) => {
+          acc[author.id] = author;
+          return acc;
+        }, {} as { [key: string]: Author });
+        setAuthors(authorsMap);
+      } catch (error) {
+        console.error("Error fetching authors:", error);
+      }
+    };
+
+    fetchAuthors();
   }, []);
 
   // Filter and paginate data
@@ -115,21 +136,30 @@ const DashboardBooks = () => {
     }
   };
 
-  const handleCreateBook = async (bookData: BookFormData) => {
-    try {
-      const response = await booksApi.create(bookData);
-      setBooks((prevBooks) => [...prevBooks, response.data]);
-      setIsCreateModalOpen(false);
-    } catch (error) {
-      console.error("Failed to create category:", error);
-    }
+  const handleCreateBook = (bookData: Book) => {
+    setBooks((prevBooks) => [bookData, ...prevBooks]);
+    setIsCreateModalOpen(false);
+    toast.success("Book created successfully!");
   };
 
-  const handleUpdateBook = async (bookData: BookFormData) => {
+  const handleUpdateBook = async (bookData: Book) => {
     if (!selectedBook) return;
 
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", bookData.title);
+    formDataToSend.append("authorId", bookData.authorId);
+    formDataToSend.append("categoryId", bookData.categoryId);
+    formDataToSend.append("isbn", bookData.isbn);
+    formDataToSend.append("description", bookData.description || "");
+    formDataToSend.append("publishedYear", bookData.publishedYear.toString());
+    formDataToSend.append("quantity", bookData.quantity.toString());
+    formDataToSend.append("rating", (bookData.rating ?? 0).toString());
+    if (bookData.cover) formDataToSend.append("cover", bookData.cover);
+    if (bookData.pdf) formDataToSend.append("pdf", bookData.pdf);
+
     try {
-      const response = await booksApi.update(selectedBook.id, bookData);
+      // @ts-ignore
+      const response = await booksApi.update(selectedBook.id, formDataToSend);
       setBooks((prevBooks) =>
         prevBooks.map((book) =>
           book.id === selectedBook.id ? response.data : book
@@ -137,24 +167,22 @@ const DashboardBooks = () => {
       );
       setIsUpdateModalOpen(false);
       setSelectedBook(null);
-    } catch (error) {
-      console.error("Failed to update category:", error);
+      toast.success("Book updated successfully!");
+    } catch (error: any) {
+      console.error("Failed to update book:", error);
+      if (error.response?.data?.message) {
+        console.error("Server error message:", error.response.data.message);
+      }
     }
   };
 
-  const handleDeleteBook = async() => {
-    if (!bookToDelete) return;
-
-    try {
-      await booksApi.delete(bookToDelete.id);
-      setBooks((prevBooks) =>
-        prevBooks.filter((book) => book.id !== bookToDelete.id)
-      );
-      setIsDeleteModalOpen(false);
-      setBookToDelete(null);
-    } catch (error) {
-      console.error("Failed to delete category:", error);
-    }
+  const handleDeleteBook = (deletedBookId: string) => {
+    setBooks((prevBooks) =>
+      prevBooks.filter((book) => book.id !== deletedBookId)
+    );
+    setIsDeleteModalOpen(false);
+    setBookToDelete(null);
+    toast.success("Book deleted successfully!");
   };
 
   const itemsPerPage = 5;
@@ -266,7 +294,7 @@ const DashboardBooks = () => {
                   {book.title}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {book.authorId}
+                  {authors[book.authorId]?.name || book.authorId}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {book.isbn}
@@ -302,6 +330,7 @@ const DashboardBooks = () => {
                     </button>
                     <button
                       onClick={() => {
+                        // @ts-ignore
                         setBookToDelete(book);
                         setIsDeleteModalOpen(true);
                       }}
@@ -352,22 +381,7 @@ const DashboardBooks = () => {
             setSelectedBook(null);
           }}
           onSubmit={handleUpdateBook}
-          bookData={
-            selectedBook
-              ? {
-                  title: selectedBook.title,
-                  authorId: selectedBook.authorId,
-                  categoryId: selectedBook.categoryId,
-                  isbn: selectedBook.isbn,
-                  description: selectedBook.description,
-                  publishedYear: selectedBook.publishedYear,
-                  quantity: selectedBook.quantity,
-                  cover: selectedBook.cover,
-                  pdf: selectedBook.pdf,
-                  rating: selectedBook.rating,
-                }
-              : null
-          }
+          bookData={selectedBook}
         />
         <DeleteBookModal
           isOpen={isDeleteModalOpen}
@@ -377,6 +391,7 @@ const DashboardBooks = () => {
           }}
           onConfirm={handleDeleteBook}
           bookTitle={bookToDelete?.title || ""}
+          bookData={{ id: bookToDelete?.id || "" }}
         />
       </div>
     </div>
@@ -384,3 +399,4 @@ const DashboardBooks = () => {
 };
 
 export default DashboardBooks;
+

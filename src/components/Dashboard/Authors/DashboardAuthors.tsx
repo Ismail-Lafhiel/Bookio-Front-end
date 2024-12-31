@@ -1,18 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiPlus, FiSearch, FiEdit2, FiTrash2 } from "react-icons/fi";
-import {
-  Author,
-  authors,
-  filterAuthors,
-  paginateAuthors,
-} from "./data/authors";
+import { authorsApi } from "../../../services/apiService";
 import Pagination from "../../UI/Pagination";
 import { formatDate } from "../../../utils/formatDate";
 import DeleteAuthorModal from "./Modals/DeleteAuthorModal";
 import UpdateAuthorModal from "./Modals/UpdateAuthorModal";
 import CreateAuthorModal from "./Modals/CreateAuthorModal";
+import { Author } from "../../../interfaces/author";
 
 const DashboardAuthors = () => {
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const pageSize = 6;
@@ -21,6 +18,19 @@ const DashboardAuthors = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const response = await authorsApi.getAll();
+        setAuthors(response.data.authors);
+      } catch (error) {
+        console.error("Failed to fetch authors:", error);
+      }
+    };
+
+    fetchAuthors();
+  }, []);
 
   // Modal handlers
   const handleOpenCreateModal = () => {
@@ -45,51 +55,48 @@ const DashboardAuthors = () => {
   };
 
   // CRUD operations
-  const handleCreateAuthor = async (
-    authorData: Omit<Author, "id" | "booksCount" | "imageUrl">
-  ): Promise<void> => {
+  const handleCreateAuthor = async (authorData: Omit<Author, "id">) => {
     try {
-      // Implement create functionality
-      console.log("Creating author:", authorData);
+      const response = await authorsApi.create(authorData);
+      setAuthors((prevAuthors) => [...prevAuthors, response.data]);
       handleCloseModals();
-      // Refresh the authors list or update the state
     } catch (error) {
       console.error("Error creating author:", error);
-      throw error;
     }
   };
 
-  const handleUpdateAuthor = async (
-    authorId: string,
-    authorData: Omit<Author, "id" | "booksCount" | "imageUrl">
-  ): Promise<void> => {
+  const handleUpdateAuthor = async (authorId: string, authorData: Omit<Author, "id">) => {
     try {
-      // Implement update functionality
-      console.log("Updating author:", authorId, authorData);
+      const response = await authorsApi.update(authorId, authorData);
+      setAuthors((prevAuthors) =>
+        prevAuthors.map((author) =>
+          author.id === authorId ? response.data : author
+        )
+      );
       handleCloseModals();
-      // Refresh the authors list or update the state
     } catch (error) {
       console.error("Error updating author:", error);
-      throw error;
     }
   };
 
   const handleDeleteAuthor = async (authorId: string) => {
     try {
-      // Implement delete functionality
-      console.log("Deleting author:", authorId);
+      await authorsApi.delete(authorId);
+      setAuthors((prevAuthors) =>
+        prevAuthors.filter((author) => author.id !== authorId)
+      );
       handleCloseModals();
-      // Refresh the authors list or update the state
     } catch (error) {
       console.error("Error deleting author:", error);
     }
   };
 
-  const filteredAuthors = filterAuthors(authors, searchTerm);
-  const paginatedAuthors = paginateAuthors(
-    filteredAuthors,
-    currentPage,
-    pageSize
+  const filteredAuthors = authors.filter((author) =>
+    author.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const paginatedAuthors = filteredAuthors.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
   const totalPages = Math.ceil(filteredAuthors.length / pageSize);
 
@@ -147,9 +154,9 @@ const DashboardAuthors = () => {
             <div className="relative p-6 flex flex-col h-full">
               {/* Author Header with integrated actions */}
               <div className="flex items-center space-x-4 mb-6">
-                {author.imageUrl ? (
+                {author.profile ? (
                   <img
-                    src={author.imageUrl}
+                    src={author.profile}
                     alt={author.name}
                     className="w-16 h-16 rounded-full object-cover ring-2 ring-primary/20"
                   />

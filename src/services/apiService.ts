@@ -1,3 +1,4 @@
+import { Author, AuthorApiResponse } from "../interfaces/author";
 import {
   Book,
   BookApiResponse,
@@ -11,9 +12,20 @@ import api from "./api";
 export const booksApi = {
   getAll: () => api.get<BookApiResponse>("/books"),
   getOne: (id: string) => api.get<Book>(`/books/${id}`),
-  create: (data: BookFormData) => api.post<Book>("/books", data),
-  update: (id: string, data: Partial<BookFormData>) =>
-    api.patch<Book>(`/books/${id}`, data),
+  create: async (formData: FormData) => {
+    return api.post<Book>("/books", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+  update: async (id: string, formData: FormData) => {
+    return api.patch<Book>(`/books/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
   delete: (id: string) => api.delete(`/books/${id}`),
   findByAuthor: (authorId: string) =>
     api.get<Book[]>(`/books/author/${authorId}`),
@@ -39,4 +51,17 @@ export const categoriesApi = {
     api.get<Category[]>(`/categories/author/${authorId}`),
   findByBook: (bookId: string) =>
     api.get<Category[]>(`/categories/book/${bookId}`),
+};
+
+// Authors API
+export const authorsApi = {
+  getAll: () => api.get<AuthorApiResponse>("/authors"),
+  getOne: (id: string) => api.get<Author>(`/authors/${id}`),
+  create: (data: Partial<Author>) => api.post<Author>("/authors", data),
+  update: (id: string, data: Partial<Author>) =>
+    api.patch<Author>(`/authors/${id}`, data),
+  delete: (id: string) => api.delete(`/authors/${id}`),
+  findByCategory: (categoryId: string) =>
+    api.get<Author[]>(`/authors/category/${categoryId}`),
+  findByBook: (bookId: string) => api.get<Author[]>(`/authors/book/${bookId}`),
 };
