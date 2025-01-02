@@ -7,6 +7,7 @@ import DeleteAuthorModal from "./Modals/DeleteAuthorModal";
 import UpdateAuthorModal from "./Modals/UpdateAuthorModal";
 import CreateAuthorModal from "./Modals/CreateAuthorModal";
 import { Author } from "../../../interfaces/author";
+import { toast } from "react-hot-toast";
 
 const DashboardAuthors = () => {
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -18,6 +19,7 @@ const DashboardAuthors = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -26,6 +28,7 @@ const DashboardAuthors = () => {
         setAuthors(response.data.authors);
       } catch (error) {
         console.error("Failed to fetch authors:", error);
+        toast.error("Failed to fetch authors.");
       }
     };
 
@@ -57,15 +60,32 @@ const DashboardAuthors = () => {
   // CRUD operations
   const handleCreateAuthor = async (authorData: Omit<Author, "id">) => {
     try {
-      const response = await authorsApi.create(authorData);
+      const formData = new FormData();
+      formData.append("name", authorData.name);
+      formData.append("biography", authorData.biography);
+      formData.append("birthDate", authorData.birthDate);
+      formData.append("nationality", authorData.nationality);
+      formData.append("email", authorData.email);
+      formData.append("website", authorData.website);
+      formData.append("genres", JSON.stringify(authorData.genres));
+      formData.append("socialMedia", JSON.stringify(authorData.socialMedia));
+      if (authorData.profile) {
+        formData.append("profilePicture", authorData.profile);
+      }
+      const response = await authorsApi.create(formData);
       setAuthors((prevAuthors) => [...prevAuthors, response.data]);
       handleCloseModals();
+      toast.success("Author created successfully.");
     } catch (error) {
       console.error("Error creating author:", error);
+      toast.error("Failed to create author.");
     }
   };
 
-  const handleUpdateAuthor = async (authorId: string, authorData: Omit<Author, "id">) => {
+  const handleUpdateAuthor = async (
+    authorId: string,
+    authorData: Omit<Author, "id">
+  ) => {
     try {
       const response = await authorsApi.update(authorId, authorData);
       setAuthors((prevAuthors) =>
@@ -74,8 +94,10 @@ const DashboardAuthors = () => {
         )
       );
       handleCloseModals();
+      toast.success("Author updated successfully.");
     } catch (error) {
       console.error("Error updating author:", error);
+      toast.error("Failed to update author.");
     }
   };
 
@@ -86,8 +108,15 @@ const DashboardAuthors = () => {
         prevAuthors.filter((author) => author.id !== authorId)
       );
       handleCloseModals();
+      toast.success("Author deleted successfully.");
     } catch (error) {
       console.error("Error deleting author:", error);
+      setDeleteError(
+        "Failed to delete author. Please ensure the author has no associated books."
+      );
+      toast.error(
+        "Failed to delete author. Please ensure the author has no associated books."
+      );
     }
   };
 
@@ -278,6 +307,13 @@ const DashboardAuthors = () => {
           <p className="text-gray-500 dark:text-gray-400">
             No authors found matching your search criteria.
           </p>
+        </div>
+      )}
+
+      {/* Delete Error */}
+      {deleteError && (
+        <div className="text-center py-12">
+          <p className="text-red-500 dark:text-red-400">{deleteError}</p>
         </div>
       )}
     </div>

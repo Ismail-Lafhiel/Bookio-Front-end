@@ -1,16 +1,19 @@
 // src/components/Dashboard/Authors/Modals/DeleteAuthorModal.tsx
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { DeleteAuthorModalProps } from "../../../types/author.types";
 
 const DeleteAuthorModal = ({ isOpen, onClose, onConfirm, author }: DeleteAuthorModalProps) => {
+  const [error, setError] = useState<string | null>(null);
+
   const handleDelete = async () => {
     try {
       await onConfirm();
       onClose();
     } catch (error) {
       console.error("Error deleting author:", error);
+      setError("Failed to delete author. Please ensure the author has no associated books.");
     }
   };
 
@@ -98,6 +101,12 @@ const DeleteAuthorModal = ({ isOpen, onClose, onConfirm, author }: DeleteAuthorM
                             </div>
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="mt-4 rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+                        <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
                       </div>
                     )}
                   </div>

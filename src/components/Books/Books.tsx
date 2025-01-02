@@ -1,34 +1,79 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch, FaStar } from "react-icons/fa";
-import BooksData from "../../data/books";
+import { booksApi, categoriesApi, authorsApi } from "../../services/apiService";
 import { Link } from "react-router-dom";
+import { Book } from "../../interfaces/book";
 
-interface Book {
+interface Author {
   id: string;
-  title: string;
-  author: string;
-  cover: string;
-  description: string;
-  rating: number;
-  category: string;
-  publishDate: string;
-  pages: number;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 const Books = () => {
-  const [books, setBooks] = useState<Book[]>(BooksData);
-
+  const [books, setBooks] = useState<Book[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 8;
 
-  const categories = ["All", "Classic", "Fiction", "Science", "Biography"];
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await booksApi.getAll();
+        setBooks(response.data.books);
+      } catch (error) {
+        console.error("Failed to fetch books", error);
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesApi.getAll();
+        setCategories([{ id: "All", name: "All" }, ...response.data.categories]);
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+
+    const fetchAuthors = async () => {
+      try {
+        const response = await authorsApi.getAll();
+        setAuthors(response.data.authors);
+      } catch (error) {
+        console.error("Failed to fetch authors", error);
+      }
+    };
+
+    fetchBooks();
+    fetchCategories();
+    fetchAuthors();
+  }, []);
+
+  const getAuthorName = (authorId: string) => {
+    const author = authors.find((author) => author.id === authorId);
+    return author ? author.name : "Unknown Author";
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find((category) => category.id === categoryId);
+    return category ? category.name : "Unknown Category";
+  };
 
   // Pagination calculations
   const filteredBooks = books.filter(
-    (book) => selectedCategory === "All" || book.category === selectedCategory
+    (book) =>
+      (selectedCategory === "All" || book.categoryId === selectedCategory) &&
+      (book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getAuthorName(book.authorId).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getCategoryName(book.categoryId).toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const indexOfLastBook = currentPage * booksPerPage;
@@ -53,7 +98,7 @@ const Books = () => {
   // Handlers
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // Reset to first page when changing categories
+    setCurrentPage(1);
   };
 
   return (
@@ -127,18 +172,18 @@ const Books = () => {
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {categories.map((category) => (
             <motion.button
-              key={category}
+              key={category.id}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 shadow-sm
                 ${
-                  selectedCategory === category
+                  selectedCategory === category.id
                     ? "bg-primary text-white"
                     : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
-              onClick={() => handleCategoryChange(category)}
+              onClick={() => handleCategoryChange(category.id)}
             >
-              {category}
+              {category.name}
             </motion.button>
           ))}
         </div>
@@ -171,7 +216,7 @@ const Books = () => {
                     <h3 className="text-lg font-semibold text-white mb-1">
                       {book.title}
                     </h3>
-                    <p className="text-sm text-gray-300">{book.author}</p>
+                    <p className="text-sm text-gray-300">{getAuthorName(book.authorId)}</p>
                   </div>
                 </div>
 
@@ -189,8 +234,8 @@ const Books = () => {
                         />
                       ))}
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {book.pages} pages
+                    <span className="lowercase text-xs text-gray-500 dark:text-gray-400">
+                      {book.status}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
@@ -198,7 +243,7 @@ const Books = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Published {book.publishDate}
+                      Published in {book.publishedYear}
                     </span>
                     <Link
                       to={`/books/${encodeURIComponent(book.title)}`}

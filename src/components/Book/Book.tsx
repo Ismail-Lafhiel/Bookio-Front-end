@@ -7,26 +7,51 @@ import {
   FaCalendar,
   FaLayerGroup,
 } from "react-icons/fa";
-import BooksData from "../../data/books";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { booksApi, authorsApi, categoriesApi } from "../../services/apiService";
+import { Book as BookInterface } from "../../interfaces/book";
 
 const Book = () => {
   const { title } = useParams<{ title: string }>();
+  const [book, setBook] = useState<BookInterface | null>(null);
+  const [authorName, setAuthorName] = useState<string>("");
+  const [categoryName, setCategoryName] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  // Find the book data
-  const book = BooksData.find(
-    (book) =>
-      book.title.toLowerCase() === decodeURIComponent(title!).toLowerCase()
-  );
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        const decodedTitle = decodeURIComponent(title!).trim();
+        console.log("Decoded Title:", decodedTitle); // Debug log
+        const response = await booksApi.findByName(decodedTitle);
+        console.log("API Response:", response.data); // Debug log
+        const fetchedBooks = response.data.books;
+        const fetchedBook = fetchedBooks.find(book => book.title.trim() === decodedTitle);
+        console.log("Fetched Book:", fetchedBook); // Debug log
+        setBook(fetchedBook || null);
+
+        if (fetchedBook) {
+          const authorResponse = await authorsApi.getOne(fetchedBook.authorId);
+          setAuthorName(authorResponse.data.name);
+
+          const categoryResponse = await categoriesApi.getOne(fetchedBook.categoryId);
+          setCategoryName(categoryResponse.data.name);
+        }
+      } catch (error) {
+        console.error("Failed to fetch book", error);
+      }
+    };
+
+    fetchBook();
+  }, [title]);
 
   const handleDownload = async () => {
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      const response = await fetch(book?.pdfUrl || "");
+      const response = await fetch(book?.pdf || "");
       if (!response.ok) throw new Error("Download failed");
 
       const blob = await response.blob();
@@ -102,7 +127,7 @@ const Book = () => {
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center space-x-4 text-white/90"
           >
-            <span className="text-yellow-400">By {book.author}</span>
+            <span className="text-yellow-400">By {authorName}</span>
             <div className="flex items-center space-x-1">
               <FaStar className="text-yellow-400" />
               <span>{book.rating}</span>
@@ -225,7 +250,7 @@ const Book = () => {
                       Pages
                     </h3>
                     <p className="text-gray-900 dark:text-white font-medium">
-                      {book.pages}
+                      {book.quantity}
                     </p>
                   </div>
                 </div>
@@ -239,7 +264,7 @@ const Book = () => {
                       Published
                     </h3>
                     <p className="text-gray-900 dark:text-white font-medium">
-                      {book.publishDate}
+                      {book.publishedYear}
                     </p>
                   </div>
                 </div>
@@ -253,7 +278,7 @@ const Book = () => {
                       Category
                     </h3>
                     <p className="text-gray-900 dark:text-white font-medium">
-                      {book.category}
+                      {categoryName}
                     </p>
                   </div>
                 </div>
