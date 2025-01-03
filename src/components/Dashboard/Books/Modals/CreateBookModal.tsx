@@ -21,8 +21,7 @@ import {
 } from "../../../../services/apiService";
 import { FormFileInput } from "../../../UI/FormFileInput";
 import { Category } from "../../../../interfaces/Category";
-import { Author } from "../../../types/author.types";
-
+import { Author } from "../../../../interfaces/author";
 interface CreateBookModalProps {
   isOpen: boolean;
   onClose: () => void;

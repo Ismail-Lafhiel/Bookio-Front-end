@@ -2,8 +2,7 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { DeleteAuthorModalProps } from "../../../types/author.types";
-
+import { DeleteAuthorModalProps } from "../../../../interfaces/author";
 const DeleteAuthorModal = ({ isOpen, onClose, onConfirm, author }: DeleteAuthorModalProps) => {
   const [error, setError] = useState<string | null>(null);
 

@@ -28,6 +28,7 @@ const Books = () => {
     const fetchBooks = async () => {
       try {
         const response = await booksApi.getAll();
+        console.log("Books fetched:", response.data.books);
         setBooks(response.data.books);
       } catch (error) {
         console.error("Failed to fetch books", error);
@@ -37,7 +38,11 @@ const Books = () => {
     const fetchCategories = async () => {
       try {
         const response = await categoriesApi.getAll();
-        setCategories([{ id: "All", name: "All" }, ...response.data.categories]);
+        console.log("Categories fetched:", response.data.categories);
+        setCategories([
+          { id: "All", name: "All" },
+          ...response.data.categories,
+        ]);
       } catch (error) {
         console.error("Failed to fetch categories", error);
       }
@@ -46,6 +51,7 @@ const Books = () => {
     const fetchAuthors = async () => {
       try {
         const response = await authorsApi.getAll();
+        console.log("Authors fetched:", response.data.authors); // Add this line
         setAuthors(response.data.authors);
       } catch (error) {
         console.error("Failed to fetch authors", error);
@@ -67,13 +73,26 @@ const Books = () => {
     return category ? category.name : "Unknown Category";
   };
 
+  const handleSearch = async () => {
+    try {
+      const response = await booksApi.getByTitle(searchQuery);
+      setBooks([response.data]);
+    } catch (error) {
+      console.error("Failed to fetch book by title", error);
+    }
+  };
+
   // Pagination calculations
   const filteredBooks = books.filter(
     (book) =>
       (selectedCategory === "All" || book.categoryId === selectedCategory) &&
       (book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        getAuthorName(book.authorId).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        getCategoryName(book.categoryId).toLowerCase().includes(searchQuery.toLowerCase()))
+        getAuthorName(book.authorId)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        getCategoryName(book.categoryId)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()))
   );
 
   const indexOfLastBook = currentPage * booksPerPage;
@@ -159,6 +178,7 @@ const Books = () => {
               </div>
             </div>
             <button
+              onClick={handleSearch}
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark 
                              transition-colors duration-300 text-sm font-medium"
             >
@@ -216,7 +236,9 @@ const Books = () => {
                     <h3 className="text-lg font-semibold text-white mb-1">
                       {book.title}
                     </h3>
-                    <p className="text-sm text-gray-300">{getAuthorName(book.authorId)}</p>
+                    <p className="text-sm text-gray-300">
+                      {getAuthorName(book.authorId)}
+                    </p>
                   </div>
                 </div>
 
@@ -227,6 +249,7 @@ const Books = () => {
                         <FaStar
                           key={i}
                           className={`w-4 h-4 ${
+                            //@ts-ignore
                             i < book.rating
                               ? "text-yellow-400"
                               : "text-gray-300 dark:text-gray-600"

@@ -6,14 +6,16 @@ import {
   UserIcon,
   DocumentTextIcon,
   CalendarIcon,
-  GlobeAltIcon,
   EnvelopeIcon,
   TagIcon,
   FlagIcon,
   XMarkIcon as HiX,
 } from "@heroicons/react/24/outline";
-import { AuthorFormData, UpdateAuthorModalProps } from "../../../types/author.types";
 import { authorsApi } from "../../../../services/apiService";
+import {
+  AuthorFormData,
+  UpdateAuthorModalProps,
+} from "../../../../interfaces/author";
 
 const UpdateAuthorModal = ({
   isOpen,
@@ -27,8 +29,12 @@ const UpdateAuthorModal = ({
     birthDate: "",
     nationality: "",
     email: "",
-    website: "",
     genres: [],
+    socialMedia: {
+      facebook: "",
+      twitter: "",
+      website: "",
+    },
   });
 
   interface FormErrors {
@@ -46,8 +52,12 @@ const UpdateAuthorModal = ({
         birthDate: author.birthDate,
         nationality: author.nationality,
         email: author.email,
-        website: author.website || "",
         genres: author.genres,
+        socialMedia: author.socialMedia || {
+          facebook: "",
+          twitter: "",
+          website: "",
+        },
       });
     }
   }, [author]);
@@ -190,21 +200,6 @@ const UpdateAuthorModal = ({
                           className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                           labelClassName="dark:text-gray-200"
                         />
-
-                        <FormInput
-                          label="Website"
-                          placeholder="Enter website URL"
-                          id="website"
-                          name="website"
-                          type="url"
-                          value={formData.website}
-                          onChange={handleChange}
-                          error={errors.website}
-                          icon={GlobeAltIcon}
-                          className="dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                          labelClassName="dark:text-gray-200"
-                        />
-
                         <FormInput
                           label="Birth Date"
                           id="birthDate"

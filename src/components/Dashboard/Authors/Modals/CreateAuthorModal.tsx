@@ -19,6 +19,7 @@ import {
   CreateAuthorModalProps,
   SocialMedia,
 } from "../../../../interfaces/author";
+import FormErrors from "../../../../interfaces/formError";
 
 const CreateAuthorModal = ({
   isOpen,
@@ -193,47 +194,39 @@ const CreateAuthorModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      // Filter out empty social media links
-      const filteredSocialMedia: SocialMedia = {};
-      Object.entries(formData.socialMedia).forEach(([key, value]) => {
+      const filteredSocialMedia = Object.entries(
+        formData.socialMedia
+      ).reduce<SocialMedia>((acc, [key, value]) => {
+        const typedKey = key as keyof SocialMedia;
         if (value.trim()) {
-          filteredSocialMedia[key as keyof SocialMedia] = value.trim();
+          acc[typedKey] = value.trim();
         }
-      });
+        return acc;
+      }, {});
 
-      // Create the author data object
-      const authorData: Partial<Author> = {
-        name: formData.name,
-        biography: formData.biography,
+      const authorData: AuthorFormData = {
+        name: formData.name.trim(),
+        biography: formData.biography.trim(),
         birthDate: formData.birthDate,
-        nationality: formData.nationality,
-        email: formData.email,
-        genres: formData.genres.filter((genre) => genre.trim() !== ""), // Filter out empty genres
-        socialMedia:
-          Object.keys(filteredSocialMedia).length > 0
-            ? filteredSocialMedia
-            : undefined,
+        nationality: formData.nationality.trim(),
+        email: formData.email.trim(),
+        genres: formData.genres.filter((genre) => genre.trim()),
+        socialMedia: filteredSocialMedia,
       };
 
-      // Create FormData and properly append arrays and objects
       const formDataToSend = new FormData();
+
       Object.entries(authorData).forEach(([key, value]) => {
         if (value !== undefined) {
-          if (key === "genres") {
-            // Handle genres array
-            formDataToSend.append("genres", JSON.stringify(value));
-          } else if (key === "socialMedia") {
-            // Handle socialMedia object
-            formDataToSend.append("socialMedia", JSON.stringify(value));
+          if (key === "genres" || key === "socialMedia") {
+            formDataToSend.append(key, JSON.stringify(value));
           } else {
-            formDataToSend.append(key, value as string);
+            formDataToSend.append(key, String(value));
           }
         }
       });
@@ -242,12 +235,23 @@ const CreateAuthorModal = ({
         formDataToSend.append("profilePicture", profilePicture);
       }
 
-      const response = await authorsApi.create(
-        authorData,
-        profilePicture || undefined
-      );
+      const response = await authorsApi.create(formDataToSend);
+      const createdAuthor: Author = response.data;
 
-      await onSubmit(response.data);
+      // Ensure socialMedia is always defined
+      if (!createdAuthor.socialMedia) {
+        createdAuthor.socialMedia = {};
+      }
+
+      await onSubmit({
+        name: createdAuthor.name,
+        biography: createdAuthor.biography,
+        birthDate: createdAuthor.birthDate,
+        nationality: createdAuthor.nationality,
+        email: createdAuthor.email,
+        genres: createdAuthor.genres,
+        socialMedia: createdAuthor.socialMedia,
+      });
       toast.success("Author created successfully");
       resetForm();
       onClose();
@@ -256,7 +260,7 @@ const CreateAuthorModal = ({
       toast.error(
         "Failed to create author. Please make sure all fields are correct."
       );
-      setErrors((prev) => ({
+      setErrors((prev: FormErrors) => ({
         ...prev,
         submit: "Failed to create author. Please check all required fields.",
       }));

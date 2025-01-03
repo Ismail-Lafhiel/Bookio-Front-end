@@ -23,19 +23,19 @@ const Book = () => {
     const fetchBook = async () => {
       try {
         const decodedTitle = decodeURIComponent(title!).trim();
-        console.log("Decoded Title:", decodedTitle); // Debug log
-        const response = await booksApi.findByName(decodedTitle);
-        console.log("API Response:", response.data); // Debug log
+        // console.log("Decoded Title:", decodedTitle); // Debug log
+        const response = await booksApi.getByTitle(decodedTitle);
+        // console.log("API Response:", response.data); // Debug log
         const fetchedBooks = response.data.books;
         const fetchedBook = fetchedBooks.find(book => book.title.trim() === decodedTitle);
-        console.log("Fetched Book:", fetchedBook); // Debug log
+        // console.log("Fetched Book:", fetchedBook); // Debug log
         setBook(fetchedBook || null);
 
         if (fetchedBook) {
           const authorResponse = await authorsApi.getOne(fetchedBook.authorId);
-          setAuthorName(authorResponse.data.name);
-
+          setAuthorName(authorResponse.data.author.name);          
           const categoryResponse = await categoriesApi.getOne(fetchedBook.categoryId);
+          console.log(categoryResponse.data);
           setCategoryName(categoryResponse.data.name);
         }
       } catch (error) {
@@ -247,7 +247,7 @@ const Book = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                      Pages
+                      Quantity
                     </h3>
                     <p className="text-gray-900 dark:text-white font-medium">
                       {book.quantity}
@@ -277,7 +277,7 @@ const Book = () => {
                     <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400">
                       Category
                     </h3>
-                    <p className="text-gray-900 dark:text-white font-medium">
+                    <p className="capitalize text-gray-900 dark:text-white font-medium">
                       {categoryName}
                     </p>
                   </div>
@@ -301,6 +301,7 @@ const Book = () => {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                   <div
                     className="bg-yellow-400 h-2.5 rounded-full"
+                    //@ts-ignore
                     style={{ width: `${(book.rating / 5) * 100}%` }}
                   ></div>
                 </div>

@@ -34,15 +34,15 @@ export interface AuthorFormData {
   socialMedia: SocialMedia;
 }
 
+export interface FormErrors {
+  submit?: string;
+  [key: string]: string | undefined;
+}
+
 export interface CreateAuthorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (
-    data: Omit<
-      Author,
-      "id" | "booksCount" | "profile" | "createdAt" | "updatedAt"
-    >
-  ) => Promise<void>;
+  onSubmit: (data: AuthorFormData) => Promise<void>;
 }
 
 export interface DeleteAuthorModalProps {
@@ -56,10 +56,5 @@ export interface UpdateAuthorModalProps {
   isOpen: boolean;
   onClose: () => void;
   author: Author;
-  onSubmit: (
-    data: Omit<
-      Author,
-      "id" | "booksCount" | "profile" | "createdAt" | "updatedAt"
-    >
-  ) => Promise<void>;
+  onSubmit: (data: AuthorFormData) => Promise<void>;
 }

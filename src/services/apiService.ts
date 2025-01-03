@@ -32,7 +32,7 @@ export const booksApi = {
   borrow: (id: string, data: BorrowBook) =>
     api.post<Book>(`/books/${id}/borrow`, data),
   return: (id: string) => api.post<Book>(`/books/${id}/return`),
-  findByName: (name: string) => api.get<BookApiResponse>(`/books/name/${name}`),
+  getByTitle: (title: string) => api.get<Book>(`/books/title/${encodeURIComponent(title)}`),
 };
 
 // Categories API
@@ -53,33 +53,13 @@ export const categoriesApi = {
 export const authorsApi = {
   getAll: () => api.get<AuthorApiResponse>("/authors"),
   getOne: (id: string) => api.get<Author>(`/authors/${id}`),
-  create: async (data: Partial<Author>, profilePicture?: File) => {
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      formData.append(key, (data as any)[key]);
-    });
-    if (profilePicture) {
-      formData.append("profilePicture", profilePicture);
-    }
-    return api.post<Author>("/authors", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+  create: async (data: FormData | Partial<Author>) => {
+    const headers = data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
+    return api.post<Author>("/authors", data, { headers });
   },
-  update: async (id: string, data: Partial<Author>, profilePicture?: File) => {
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      formData.append(key, (data as any)[key]);
-    });
-    if (profilePicture) {
-      formData.append("profilePicture", profilePicture);
-    }
-    return api.patch<Author>(`/authors/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+  update: async (id: string, data: FormData | Partial<Author>) => {
+    const headers = data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
+    return api.patch<Author>(`/authors/${id}`, data, { headers });
   },
   delete: (id: string) => api.delete(`/authors/${id}`),
   findByCategory: (categoryId: string) =>

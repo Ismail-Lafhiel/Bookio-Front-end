@@ -6,7 +6,7 @@ import { formatDate } from "../../../utils/formatDate";
 import DeleteAuthorModal from "./Modals/DeleteAuthorModal";
 import UpdateAuthorModal from "./Modals/UpdateAuthorModal";
 import CreateAuthorModal from "./Modals/CreateAuthorModal";
-import { Author } from "../../../interfaces/author";
+import { Author, AuthorFormData } from "../../../interfaces/author";
 import { toast } from "react-hot-toast";
 
 const DashboardAuthors = () => {
@@ -35,16 +35,11 @@ const DashboardAuthors = () => {
     fetchAuthors();
   }, []);
 
-  // Modal handlers
-  const handleOpenCreateModal = () => {
-    setIsCreateModalOpen(true);
-  };
-
+  const handleOpenCreateModal = () => setIsCreateModalOpen(true);
   const handleOpenUpdateModal = (author: Author) => {
     setSelectedAuthor(author);
     setIsUpdateModalOpen(true);
   };
-
   const handleOpenDeleteModal = (author: Author) => {
     setSelectedAuthor(author);
     setIsDeleteModalOpen(true);
@@ -57,21 +52,24 @@ const DashboardAuthors = () => {
     setSelectedAuthor(null);
   };
 
-  // CRUD operations
-  const handleCreateAuthor = async (authorData: Omit<Author, "id">) => {
+  const handleCreateAuthor = async (
+    authorData: AuthorFormData,
+    profilePicture?: File
+  ) => {
     try {
       const formData = new FormData();
-      formData.append("name", authorData.name);
-      formData.append("biography", authorData.biography);
-      formData.append("birthDate", authorData.birthDate);
-      formData.append("nationality", authorData.nationality);
-      formData.append("email", authorData.email);
-      formData.append("website", authorData.website);
-      formData.append("genres", JSON.stringify(authorData.genres));
-      formData.append("socialMedia", JSON.stringify(authorData.socialMedia));
-      if (authorData.profile) {
-        formData.append("profilePicture", authorData.profile);
+      Object.entries(authorData).forEach(([key, value]) => {
+        if (key === "genres" || key === "socialMedia") {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+
+      if (profilePicture) {
+        formData.append("profilePicture", profilePicture);
       }
+
       const response = await authorsApi.create(formData);
       setAuthors((prevAuthors) => [...prevAuthors, response.data]);
       handleCloseModals();
@@ -84,7 +82,7 @@ const DashboardAuthors = () => {
 
   const handleUpdateAuthor = async (
     authorId: string,
-    authorData: Omit<Author, "id">
+    authorData: AuthorFormData
   ) => {
     try {
       const response = await authorsApi.update(authorId, authorData);

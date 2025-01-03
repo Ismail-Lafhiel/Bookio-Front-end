@@ -15,7 +15,7 @@ export interface Book {
   updatedAt: string;
   startDate?: string;
   returnDate?: string;
-  rating: number;
+  rating?: number;
 }
 
 export interface BookApiResponse {

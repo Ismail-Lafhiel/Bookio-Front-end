@@ -21,8 +21,7 @@ import {
 } from "../../../../services/apiService";
 import { FormFileInput } from "../../../UI/FormFileInput";
 import { Category } from "../../../../interfaces/Category";
-import { Author } from "../../../types/author.types";
-
+import { Author } from "../../../../interfaces/author";
 interface UpdateBookModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -164,7 +163,7 @@ const UpdateBookModal = ({
       formData.publishedYear?.toString() || ""
     );
     formDataToSend.append("quantity", formData.quantity?.toString() || "0");
-    formDataToSend.append("rating", (formData.rating ?? 0).toString());
+    formDataToSend.append("rating", (formData.rating ?? 0).toString()); // Ensure rating is a number
     if (coverFile) formDataToSend.append("cover", coverFile);
     if (pdfFile) formDataToSend.append("pdf", pdfFile);
 

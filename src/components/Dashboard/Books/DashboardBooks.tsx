@@ -153,7 +153,7 @@ const DashboardBooks = () => {
     formDataToSend.append("description", bookData.description || "");
     formDataToSend.append("publishedYear", bookData.publishedYear.toString());
     formDataToSend.append("quantity", bookData.quantity.toString());
-    formDataToSend.append("rating", (bookData.rating ?? 0).toString());
+    formDataToSend.append("rating", (bookData.rating ?? 0).toString()); // Ensure rating is a number
     if (bookData.cover) formDataToSend.append("cover", bookData.cover);
     if (bookData.pdf) formDataToSend.append("pdf", bookData.pdf);
 
@@ -399,4 +399,3 @@ const DashboardBooks = () => {
 };
 
 export default DashboardBooks;
-
