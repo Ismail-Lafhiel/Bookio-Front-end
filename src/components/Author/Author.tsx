@@ -2,23 +2,51 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FaArrowLeft,
-  FaLinkedinIn,
   FaGlobe,
   FaQuoteLeft,
   FaStar,
   FaUsers,
   FaBookOpen,
+  FaFacebook,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import AuthorsData from "../../data/authors";
+import { useEffect, useState } from "react";
+import { authorsApi, booksApi } from "../../services/apiService";
+import { Author as AuthorType } from "../../interfaces/author";
+import { Book } from "../../interfaces/book";
 
 const Author = () => {
-  const { name } = useParams<{ name: string }>();
+  const { id } = useParams<{ id: string }>();
+  const [author, setAuthor] = useState<AuthorType | null>(null);
+  const [books, setBooks] = useState<Book[]>([]);
 
-  const author = AuthorsData.find(
-    (author) =>
-      author.name.toLowerCase() === decodeURIComponent(name!).toLowerCase()
-  );
+  useEffect(() => {
+    const fetchAuthor = async () => {
+      if (!id) {
+        console.log("no id provided", id);
+      }
+      try {
+        const response = await authorsApi.getOne(id!);
+        // @ts-ignore
+        setAuthor(response.data.author);
+      } catch (error) {
+        console.error("Failed to fetch author", error);
+      }
+    };
+
+    const fetchBooks = async () => {
+      try {
+        const response = await booksApi.findByAuthor(id!);
+        // @ts-ignore
+        setBooks(response.data.books);
+      } catch (error) {
+        console.error("Failed to fetch books", error);
+      }
+    };
+
+    fetchAuthor();
+    fetchBooks();
+  }, [id]);
 
   if (!author) {
     return (
@@ -51,7 +79,7 @@ const Author = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/95 to-primary-dark/95 mix-blend-multiply" />
           <div
             className="absolute inset-0 bg-cover bg-center blur-sm scale-105"
-            style={{ backgroundImage: `url(${author.image})` }}
+            style={{ backgroundImage: `url(${author.profile})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </motion.div>
@@ -80,7 +108,7 @@ const Author = () => {
                 className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl"
               >
                 <img
-                  src={author.image}
+                  src={author.profile}
                   alt={author.name}
                   className="w-full h-full object-cover"
                 />
@@ -95,27 +123,33 @@ const Author = () => {
                     {author.name}
                   </h1>
                   <div className="hidden md:flex space-x-3">
-                    <motion.a
-                      whileHover={{ y: -2 }}
-                      href={author.social.twitter}
-                      className="text-white/70 hover:text-white transition-colors"
-                    >
-                      <FaXTwitter className="w-5 h-5" />
-                    </motion.a>
-                    <motion.a
-                      whileHover={{ y: -2 }}
-                      href={author.social.linkedin}
-                      className="text-white/70 hover:text-white transition-colors"
-                    >
-                      <FaLinkedinIn className="w-5 h-5" />
-                    </motion.a>
-                    <motion.a
-                      whileHover={{ y: -2 }}
-                      href={author.social.website}
-                      className="text-white/70 hover:text-white transition-colors"
-                    >
-                      <FaGlobe className="w-5 h-5" />
-                    </motion.a>
+                    {author.socialMedia?.twitter && (
+                      <motion.a
+                        whileHover={{ y: -2 }}
+                        href={author.socialMedia.twitter}
+                        className="text-white/70 hover:text-white transition-colors"
+                      >
+                        <FaXTwitter className="w-5 h-5" />
+                      </motion.a>
+                    )}
+                    {author.socialMedia?.facebook && (
+                      <motion.a
+                        whileHover={{ y: -2 }}
+                        href={author.socialMedia.facebook}
+                        className="text-white/70 hover:text-white transition-colors"
+                      >
+                        <FaFacebook className="w-5 h-5" />
+                      </motion.a>
+                    )}
+                    {author.socialMedia?.website && (
+                      <motion.a
+                        whileHover={{ y: -2 }}
+                        href={author.socialMedia.website}
+                        className="text-white/70 hover:text-white transition-colors"
+                      >
+                        <FaGlobe className="w-5 h-5" />
+                      </motion.a>
+                    )}
                   </div>
                 </motion.div>
                 <motion.p
@@ -123,7 +157,7 @@ const Author = () => {
                   animate={{ y: 0, opacity: 1 }}
                   className="text-xl text-white/90 mb-4"
                 >
-                  {author.role}
+                  {author.nationality}
                 </motion.p>
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
@@ -133,13 +167,13 @@ const Author = () => {
                 >
                   <div className="flex items-center space-x-2">
                     <FaBookOpen className="text-yellow-400 w-5 h-5" />
-                    <span className="text-white/90">{author.books} Books</span>
+                    <span className="text-white/90">
+                      {author.booksCount} Books
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <FaUsers className="text-yellow-400 w-5 h-5" />
-                    <span className="text-white/90">
-                      {author.followers} Followers
-                    </span>
+                    <span className="text-white/90">{author.email}</span>
                   </div>
                 </motion.div>
               </div>
@@ -168,13 +202,13 @@ const Author = () => {
                   <FaQuoteLeft className="text-primary/20 w-8 h-8" />
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {author.bio}
+                  {author.biography}
                 </p>
               </div>
               <div className="grid grid-cols-3 border-t border-gray-100 dark:border-gray-700">
                 <div className="p-6 text-center border-r border-gray-100 dark:border-gray-700">
                   <div className="text-2xl font-bold text-primary mb-1">
-                    {author.books}
+                    {author.booksCount}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     Published Books
@@ -182,18 +216,18 @@ const Author = () => {
                 </div>
                 <div className="p-6 text-center border-r border-gray-100 dark:border-gray-700">
                   <div className="text-2xl font-bold text-primary mb-1">
-                    {author.followers}
+                    {author.nationality}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Followers
+                    Nationality
                   </div>
                 </div>
                 <div className="p-6 text-center">
                   <div className="text-2xl font-bold text-primary mb-1">
-                    4.8
+                    {author.birthDate}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Average Rating
+                    Birth Date
                   </div>
                 </div>
               </div>
@@ -205,37 +239,43 @@ const Author = () => {
                 Latest Books
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[1, 2, 3, 4].map((_, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                    className="flex space-x-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4"
-                  >
-                    <div className="w-20 h-28 rounded-lg overflow-hidden shadow-lg">
-                      <img
-                        src="/book-1.jpg"
-                        alt="Book cover"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                        Book Title
-                      </h3>
-                      <div className="flex items-center space-x-1 mb-2">
-                        <FaStar className="text-yellow-400 w-4 h-4" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          4.5
-                        </span>
+                {Array.isArray(books) && books.length > 0 ? (
+                  books.map((book, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index }}
+                      className="flex space-x-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4"
+                    >
+                      <div className="w-20 h-28 rounded-lg overflow-hidden shadow-lg">
+                        <img
+                          src={book.cover}
+                          alt={book.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Published 2023
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                          {book.title}
+                        </h3>
+                        <div className="flex items-center space-x-1 mb-2">
+                          <FaStar className="text-yellow-400 w-4 h-4" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {book.rating}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Published {book.publishedYear}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No books found.
+                  </p>
+                )}
               </div>
             </div>
           </motion.div>
@@ -250,33 +290,39 @@ const Author = () => {
             {/* Connect Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-md">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                Connect with {author.name.split(" ")[0]}
+                Connect with {author.name}
               </h2>
               <div className="grid grid-cols-3 gap-4">
-                <motion.a
-                  whileHover={{ y: -2 }}
-                  href={author.social.twitter}
-                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl text-gray-600 hover:text-primary dark:text-gray-400 flex flex-col items-center justify-center space-y-2"
-                >
-                  <FaXTwitter className="w-6 h-6" />
-                  <span className="text-sm">Twitter</span>
-                </motion.a>
-                <motion.a
-                  whileHover={{ y: -2 }}
-                  href={author.social.linkedin}
-                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl text-gray-600 hover:text-primary dark:text-gray-400 flex flex-col items-center justify-center space-y-2"
-                >
-                  <FaLinkedinIn className="w-6 h-6" />
-                  <span className="text-sm">LinkedIn</span>
-                </motion.a>
-                <motion.a
-                  whileHover={{ y: -2 }}
-                  href={author.social.website}
-                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl text-gray-600 hover:text-primary dark:text-gray-400 flex flex-col items-center justify-center space-y-2"
-                >
-                  <FaGlobe className="w-6 h-6" />
-                  <span className="text-sm">Website</span>
-                </motion.a>
+                {author.socialMedia?.twitter && (
+                  <motion.a
+                    whileHover={{ y: -2 }}
+                    href={author.socialMedia.twitter}
+                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl text-gray-600 hover:text-primary dark:text-gray-400 flex flex-col items-center justify-center space-y-2"
+                  >
+                    <FaXTwitter className="w-6 h-6" />
+                    <span className="text-sm">Twitter</span>
+                  </motion.a>
+                )}
+                {author.socialMedia?.facebook && (
+                  <motion.a
+                    whileHover={{ y: -2 }}
+                    href={author.socialMedia.facebook}
+                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl text-gray-600 hover:text-primary dark:text-gray-400 flex flex-col items-center justify-center space-y-2"
+                  >
+                    <FaFacebook className="w-6 h-6" />
+                    <span className="text-sm">LinkedIn</span>
+                  </motion.a>
+                )}
+                {author.socialMedia?.website && (
+                  <motion.a
+                    whileHover={{ y: -2 }}
+                    href={author.socialMedia.website}
+                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl text-gray-600 hover:text-primary dark:text-gray-400 flex flex-col items-center justify-center space-y-2"
+                  >
+                    <FaGlobe className="w-6 h-6" />
+                    <span className="text-sm">Website</span>
+                  </motion.a>
+                )}
               </div>
             </div>
 

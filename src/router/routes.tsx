@@ -63,7 +63,7 @@ export const publicRoutes: RouteObject[] = [
         element: <Authors />,
       },
       {
-        path: "/authors/:name",
+        path: "/authors/:id",
         element: <Author />,
       },
       {

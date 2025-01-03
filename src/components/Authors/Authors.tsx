@@ -1,26 +1,28 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import {FaLinkedinIn, FaGlobe, FaBook } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaGlobe, FaBook, FaFacebook } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import AuthorsData from "../../data/authors";
+import { authorsApi } from "../../services/apiService";
 import { Link } from "react-router-dom";
-
-interface Author {
-  name: string;
-  role: string;
-  image: string;
-  books: number;
-  followers: string;
-  bio: string;
-  social: {
-    twitter: string;
-    linkedin: string;
-    website: string;
-  };
-}
+import { Author } from "../../interfaces/author";
 
 const Authors = () => {
-  const [authors, setAuthors] = useState<Author[]>(AuthorsData);
+  const [authors, setAuthors] = useState<Author[]>([]);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const response = await authorsApi.getAll();
+        setAuthors(response.data.authors);
+        console.log("Authors fetched:", response.data.authors);
+        
+      } catch (error) {
+        console.error("Failed to fetch authors", error);
+      }
+    };
+
+    fetchAuthors();
+  }, []);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -75,7 +77,7 @@ const Authors = () => {
                 hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]
                 transition-all duration-300"
               >
-                <Link to={`/authors/${encodeURIComponent(author.name)}`}>
+                <Link to={`/authors/${author?.id}`}>
                   <motion.div
                     className="relative h-[280px] group overflow-hidden rounded-t-lg"
                     initial="initial"
@@ -84,7 +86,7 @@ const Authors = () => {
                     variants={fadeInUp}
                   >
                     <img
-                      src={author.image}
+                      src={author.profile}
                       alt={author.name}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
@@ -105,47 +107,50 @@ const Authors = () => {
                         {author.name}
                       </h3>
                       <p className="text-primary text-sm font-medium">
-                        {author.role}
+                        {author.nationality}
                       </p>
                     </div>
                     <div className="flex space-x-2">
-                      <motion.a
-                        whileHover={{ y: -2 }}
-                        className="text-gray-600 hover:text-primary dark:text-gray-400"
-                        href={author.social.twitter}
-                      >
-                        <FaXTwitter className="w-4 h-4" />
-                      </motion.a>
-                      <motion.a
-                        whileHover={{ y: -2 }}
-                        className="text-gray-600 hover:text-primary dark:text-gray-400"
-                        href={author.social.linkedin}
-                      >
-                        <FaLinkedinIn className="w-4 h-4" />
-                      </motion.a>
-                      <motion.a
-                        whileHover={{ y: -2 }}
-                        className="text-gray-600 hover:text-primary dark:text-gray-400"
-                        href={author.social.website}
-                      >
-                        <FaGlobe className="w-4 h-4" />
-                      </motion.a>
+                      {author.socialMedia?.twitter && (
+                        <motion.a
+                          whileHover={{ y: -2 }}
+                          className="text-gray-600 hover:text-primary dark:text-gray-400"
+                          href={author.socialMedia?.twitter}
+                        >
+                          <FaXTwitter className="w-4 h-4" />
+                        </motion.a>
+                      )}
+                      {author.socialMedia?.facebook && (
+                        <motion.a
+                          whileHover={{ y: -2 }}
+                          className="text-gray-600 hover:text-primary dark:text-gray-400"
+                          href={author.socialMedia.facebook}
+                        >
+                          <FaFacebook className="w-4 h-4" />
+                        </motion.a>
+                      )}
+                      {author.socialMedia?.website && (
+                        <motion.a
+                          whileHover={{ y: -2 }}
+                          className="text-gray-600 hover:text-primary dark:text-gray-400"
+                          href={author.socialMedia.website}
+                        >
+                          <FaGlobe className="w-4 h-4" />
+                        </motion.a>
+                      )}
                     </div>
                   </div>
 
-                  <p className="mt-4 text-gray-600 dark:text-gray-300 text-sm">
-                    {author.bio}
+                  <p className="mt-4 text-gray-600 dark:text-gray-300 text-sm truncate">
+                    {author.biography}
                   </p>
 
                   <div className="mt-6 flex items-center justify-between">
                     <div className="flex items-center space-x-1">
                       <FaBook className="text-primary w-4 h-4" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {author.books} Books
+                        {author.booksCount} Books
                       </span>
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {author.followers} Followers
                     </div>
                   </div>
 
@@ -154,9 +159,7 @@ const Authors = () => {
                     whileTap={{ scale: 0.98 }}
                     className="mt-6 w-full bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                   >
-                    <Link to={`/authors/${encodeURIComponent(author.name)}`}>
-                      View Profile
-                    </Link>
+                    <Link to={`/authors/${author?.id}`}>View Profile</Link>
                   </motion.button>
                 </div>
               </motion.div>

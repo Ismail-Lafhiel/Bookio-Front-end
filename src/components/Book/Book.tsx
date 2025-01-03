@@ -26,15 +26,22 @@ const Book = () => {
         // console.log("Decoded Title:", decodedTitle); // Debug log
         const response = await booksApi.getByTitle(decodedTitle);
         // console.log("API Response:", response.data); // Debug log
+        // @ts-ignore
         const fetchedBooks = response.data.books;
-        const fetchedBook = fetchedBooks.find(book => book.title.trim() === decodedTitle);
+        const fetchedBook = fetchedBooks.find(
+          // @ts-ignore
+          (book) => book.title.trim() === decodedTitle
+        );
         // console.log("Fetched Book:", fetchedBook); // Debug log
         setBook(fetchedBook || null);
 
         if (fetchedBook) {
           const authorResponse = await authorsApi.getOne(fetchedBook.authorId);
-          setAuthorName(authorResponse.data.author.name);          
-          const categoryResponse = await categoriesApi.getOne(fetchedBook.categoryId);
+          // @ts-ignore
+          setAuthorName(authorResponse.data.author.name);
+          const categoryResponse = await categoriesApi.getOne(
+            fetchedBook.categoryId
+          );
           console.log(categoryResponse.data);
           setCategoryName(categoryResponse.data.name);
         }
@@ -161,7 +168,7 @@ const Book = () => {
                 className="w-full bg-primary text-white font-medium py-3 rounded-lg hover:bg-primary-dark transition-colors duration-200 flex items-center justify-center"
               >
                 <FaBookOpen className="mr-2" />
-                Read Now
+                Borrow Now
               </motion.button>
 
               <motion.button

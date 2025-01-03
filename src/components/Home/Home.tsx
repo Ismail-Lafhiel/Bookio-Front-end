@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   FaSearch,
   FaBook,
@@ -13,9 +13,21 @@ import {
 } from "react-icons/fa";
 import { BiBookHeart } from "react-icons/bi";
 import { MdAutoStories } from "react-icons/md";
+import { Book } from "../../interfaces/book";
+import { Category } from "../../interfaces/Category";
+import { Author } from "../../interfaces/author";
+import { authorsApi, booksApi, categoriesApi } from "../../services/apiService";
 
 const Home = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [books, setBooks] = useState<Book[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: scrollRef,
@@ -61,26 +73,67 @@ const Home = () => {
     },
   ];
 
-  const popularCategories = [
-    { name: "Fiction", count: "25,430", color: "from-blue-500 to-blue-600" },
-    { name: "Science", count: "12,750", color: "from-green-500 to-green-600" },
-    {
-      name: "Business",
-      count: "8,340",
-      color: "from-purple-500 to-purple-600",
-    },
-    { name: "History", count: "15,890", color: "from-red-500 to-red-600" },
-    {
-      name: "Technology",
-      count: "10,230",
-      color: "from-yellow-500 to-yellow-600",
-    },
-    { name: "Arts", count: "7,890", color: "from-pink-500 to-pink-600" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [booksRes, categoriesRes, authorsRes] = await Promise.all([
+          booksApi.getAll(),
+          categoriesApi.getAll(),
+          authorsApi.getAll(),
+        ]);
+
+        setBooks(booksRes.data.books);
+        setCategories(categoriesRes.data.categories);
+        setAuthors(authorsRes.data.authors);
+
+        const topRated = booksRes.data.books
+          .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+          .slice(0, 4);
+        setFeaturedBooks(topRated);
+      } catch (err) {
+        setError("Failed to load data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    try {
+      setLoading(true);
+      const result = await booksApi.search(searchQuery);
+      setBooks(result.data);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setError("Search failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section with Parallax */}
+      {/* Hero Section */}
       <div ref={scrollRef} className="relative h-screen overflow-hidden">
         <motion.div style={{ y, opacity }} className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90 mix-blend-multiply" />
@@ -118,9 +171,11 @@ const Home = () => {
                 }}
                 className="max-w-xl mx-auto relative"
               >
-                <div className="relative">
+                <form onSubmit={handleSearch}>
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by title, author, or ISBN..."
                     className="w-full px-6 py-4 rounded-full bg-white/95 backdrop-blur-sm focus:bg-white 
                              text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400/30 
@@ -128,7 +183,10 @@ const Home = () => {
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setIsSearchFocused(false)}
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <button
+                    type="submit"
+                    className="absolute right-3 top-1/3 -translate-y-1/2"
+                  >
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -136,22 +194,21 @@ const Home = () => {
                     >
                       <FaSearch className="text-lg" />
                     </motion.div>
-                  </div>
-                </div>
+                  </button>
+                </form>
 
-                {/* Trending Searches */}
                 <div className="mt-3 flex items-center justify-center gap-2 text-white">
                   <span className="text-xs text-white font-bold drop-shadow-lg">
-                    Trending:
+                    Popular Categories:
                   </span>
-                  {["Fantasy", "Self-Help", "Mystery"].map((term) => (
+                  {categories.slice(0, 3).map((cat) => (
                     <motion.span
-                      key={term}
+                      key={cat.id}
                       whileHover={{ scale: 1.03 }}
                       className="text-xs bg-primary/50 px-2.5 py-0.5 rounded-full cursor-pointer 
                                hover:bg-primary-dark transition-colors"
                     >
-                      {term}
+                      {cat.name}
                     </motion.span>
                   ))}
                 </div>
@@ -159,7 +216,6 @@ const Home = () => {
             </motion.div>
           </div>
 
-          {/* Scroll Indicator */}
           <motion.div
             className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
             animate={{ y: [0, 8, 0] }}
@@ -175,6 +231,7 @@ const Home = () => {
           </motion.div>
         </div>
       </div>
+
       {/* Stats Overview */}
       <div className="relative -mt-16 z-10 mb-16">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
@@ -185,10 +242,27 @@ const Home = () => {
             className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6"
           >
             {[
-              { number: "1M+", label: "Books", icon: <FaBook /> },
-              { number: "500K+", label: "Readers", icon: <FaBookReader /> },
-              { number: "50K+", label: "Authors", icon: <FaGlobe /> },
-              { number: "4.9", label: "Rating", icon: <FaStar /> },
+              { number: books.length, label: "Books", icon: <FaBook /> },
+              {
+                number: authors.length,
+                label: "Authors",
+                icon: <FaBookReader />,
+              },
+              {
+                number: categories.length,
+                label: "Categories",
+                icon: <FaGlobe />,
+              },
+              {
+                number: books.length
+                  ? (
+                      books.reduce((acc, book) => acc + (book.rating || 0), 0) /
+                      books.length
+                    ).toFixed(1)
+                  : "0.0",
+                label: "Avg Rating",
+                icon: <FaStar />,
+              },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -213,7 +287,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Popular Categories */}
+      {/* Categories Section */}
       <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
@@ -239,18 +313,20 @@ const Home = () => {
             viewport={{ once: true }}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
           >
-            {popularCategories.map((category, index) => (
+            {categories.map((category, index) => (
               <motion.div
-                key={index}
+                key={category.id}
                 whileHover={{
                   scale: 1.03,
                   boxShadow:
                     "0 15px 20px -5px rgba(0, 0, 0, 0.1), 0 8px 8px -5px rgba(0, 0, 0, 0.04)",
                 }}
-                className={`bg-gradient-to-br ${category.color} rounded-xl p-4 text-white cursor-pointer transform transition-transform duration-200`}
+                className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white cursor-pointer transform transition-transform duration-200`}
               >
                 <h3 className="font-bold text-lg mb-0.5">{category.name}</h3>
-                <p className="text-white/80 text-xs">{category.count} books</p>
+                <p className="text-white/80 text-xs">
+                  {category.booksCount} books
+                </p>
                 <FaArrowRight className="mt-3 text-white/60 text-sm" />
               </motion.div>
             ))}
@@ -307,7 +383,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Featured Books Carousel */}
+      {/* Featured Books */}
       <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
           <motion.div
@@ -327,9 +403,9 @@ const Home = () => {
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((_, index) => (
+            {featuredBooks.map((book, index) => (
               <motion.div
-                key={index}
+                key={book.id}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -338,22 +414,32 @@ const Home = () => {
                 className="group relative rounded-xl overflow-hidden shadow-md"
               >
                 <div className="relative pt-[150%]">
-                  {" "}
                   <img
-                    src={`/book-${index + 1}.jpg`}
-                    alt="Book cover"
+                    src={book.cover || `/book-${index + 1}.jpg`}
+                    alt={book.title}
                     className="absolute inset-0 object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-200"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-200 bg-gradient-to-t from-black/90 via-black/70 to-transparent pt-12">
-                  <h3 className="text-white font-bold text-sm">Book Title</h3>
-                  <p className="text-white/80 text-xs">Author Name</p>
+                  <h3 className="text-white font-bold text-sm">{book.title}</h3>
+                  <p className="text-white/80 text-xs">
+                    {authors.find((a) => a.id === book.authorId)?.name}
+                  </p>
                   <div className="flex items-center mt-1.5">
                     {[...Array(5)].map((_, i) => (
-                      <FaStar key={i} className="w-3 h-3 text-yellow-400" />
+                      <FaStar
+                        key={i}
+                        className={`w-3 h-3 ${
+                          i < (book.rating || 0)
+                            ? "text-yellow-400"
+                            : "text-gray-400"
+                        }`}
+                      />
                     ))}
-                    <span className="ml-1.5 text-white/80 text-xs">4.5</span>
+                    <span className="ml-1.5 text-white/80 text-xs">
+                      {book.rating?.toFixed(1)}
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -386,7 +472,7 @@ const Home = () => {
                 </p>
                 <div className="flex items-center justify-center">
                   <img
-                    src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.OfDQ8AIZnefTuJhludVucAHaJ8%26pid%3DApi&f=1&ipt=d7580a2f76ca543e7f21f049ae7f40f0c64bd29238440812c2cf51800d68c5d5&ipo=images"
+                    src="/api/placeholder/40/40"
                     alt="User"
                     className="w-10 h-10 rounded-full"
                   />
