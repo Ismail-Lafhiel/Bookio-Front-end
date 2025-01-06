@@ -1,12 +1,11 @@
 import { Outlet } from "react-router-dom";
+import BaseLayout from "./BaseLayout";
 
 const MainLayout = () => {
   return (
-    <div className="main-layout">
-      <main>
-        <Outlet />
-      </main>
-    </div>
+    <BaseLayout>
+      <Outlet />
+    </BaseLayout>
   );
 };
 

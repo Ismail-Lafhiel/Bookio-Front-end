@@ -1,12 +1,17 @@
-// src/layouts/AuthLayout.tsx
-import { Outlet, Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Navigate, Outlet } from "react-router-dom";
+import { LoadingSpinner } from "../components/UI/LoadingSpinner";
+import { useAuth } from "../context/AuthContext";
+import BaseLayout from "./BaseLayout";
 
 const AuthLayout = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -14,11 +19,9 @@ const AuthLayout = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      <main>
-        <Outlet />
-      </main>
-    </div>
+    <BaseLayout>
+      <Outlet />
+    </BaseLayout>
   );
 };
 
