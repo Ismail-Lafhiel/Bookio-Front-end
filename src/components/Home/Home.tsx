@@ -108,8 +108,9 @@ const Home = () => {
 
     try {
       setLoading(true);
-      const result = await booksApi.search(searchQuery);
-      setBooks(result.data);
+      const result = await booksApi.search(searchQuery.trim());
+      //@ts-ignore
+      setBooks(result.data.books);
     } catch (err) {
       console.error("Search failed:", err);
       setError("Search failed. Please try again.");
@@ -315,7 +316,7 @@ const Home = () => {
           >
             {categories.map((category, index) => (
               <motion.div
-                key={category.id}
+                key={index}
                 whileHover={{
                   scale: 1.03,
                   boxShadow:
