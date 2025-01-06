@@ -1,14 +1,16 @@
 import "./App.css";
-import { BrowserRouter } from "react-router-dom";
 import { AppRouter } from "./router";
 import { AuthProvider } from "./context/AuthContext";
+import { Toaster } from "react-hot-toast";
+import { DarkModeProvider } from "./context/DarkModeContext";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <DarkModeProvider>
+        <Toaster position="top-right" />
         <AppRouter />
-      </BrowserRouter>
+      </DarkModeProvider>
     </AuthProvider>
   );
 }
