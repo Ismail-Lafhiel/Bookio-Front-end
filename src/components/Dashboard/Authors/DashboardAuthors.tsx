@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiPlus, FiSearch, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { authorsApi } from "../../../services/apiService";
-import Pagination from "../../UI/Pagination";
+import Pagination from "@/components/UI/Pagination";
 import { formatDate } from "../../../utils/formatDate";
 import DeleteAuthorModal from "./Modals/DeleteAuthorModal";
 import UpdateAuthorModal from "./Modals/UpdateAuthorModal";
